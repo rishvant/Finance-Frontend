@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "https://finance-o02q.onrender.com/api";
 
 export const getOrders = async () => {
     try {

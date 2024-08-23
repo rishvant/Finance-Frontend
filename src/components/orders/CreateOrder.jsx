@@ -1,10 +1,8 @@
 import React from "react";
 import {
   Card,
-  CardHeader,
   CardBody,
   CardFooter,
-  Typography,
   Button,
   Input,
   Textarea,
@@ -25,6 +23,11 @@ const validationSchema = Yup.object().shape({
       weight: Yup.number().required("Weight is required").positive().integer(),
       quantity: Yup.number().required("Quantity is required").positive().integer(),
       staticPrice: Yup.number().required("Static Price is required").positive().integer(),
+      quantityPerPiece: Yup.number().required("Quantity per Piece is required").positive().integer(),
+      piecesPerBox: Yup.number().required("Pieces per Box is required").positive().integer(),
+      numberOfBoxes: Yup.number().required("Number of Boxes is required").positive().integer(),
+      weightPerMl: Yup.number().required("Weight per Ml is required").positive(),
+      // finalWeightMetric: Yup.number().required("Final Weight in Metric Tons is required").positive(),
     })
   ),
   companyBargainNo: Yup.string().required("Company Bargain Number is required"),
@@ -49,7 +52,12 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
         packaging: "box",
         weight: "",
         quantity: "",
-        staticPrice:""
+        staticPrice: "",
+        quantityPerPiece: "",
+        piecesPerBox: "",
+        numberOfBoxes: "",
+        weightPerMl: "",
+        finalWeightMetric: "",
       },
     ],
     companyBargainNo: "",
@@ -65,11 +73,33 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
     transportLocation: "",
   };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const calculateWeight = (values, index) => {
+    const item = values.items[index];
+    const category = parseFloat(item.quantityPerPiece || 0);
+    const pieces = parseInt(item.piecesPerBox || 0);
+    const boxes = parseInt(item.numberOfBoxes || 0);
+    const weightPerMl = parseFloat(item.weightPerMl || 0);
+
+    const totalMl = category * pieces * boxes;
+    const totalGrams = totalMl * weightPerMl;
+    const totalKg = totalGrams / 1000;
+    const totalMt = totalKg / 1000;
+
+    return totalMt;
+  };
+
+const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await createOrder(values);
+      const updatedValues = {
+        ...values,
+        items: values.items.map((item, index) => ({
+          ...item,
+          weight: calculateWeight(values, index),
+        })),
+      };
+      const response = await createOrder(updatedValues);
       console.log(response);
-      console.log("Form submitted with values:", values);
+      console.log("Form submitted with values:", updatedValues);
       setShowCreateOrderForm(false);
     } catch (error) {
       console.error("Error creating order:", error);
@@ -108,7 +138,7 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                 {({ push, remove }) => (
                   <>
                     {values.items.map((_, index) => (
-                      <div key={index} className="flex flex-col gap-4 border-b pb-4 mb-4">
+                      <div key={index} className="flex flex-col gap-4 border border-black/20 border-[3px] rounded-lg p-4 pb-4 mb-4">
                         <div>
                           <Field
                             name={`items[${index}].name`}
@@ -186,6 +216,82 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                             className="text-red-600 text-sm"
                           />
                         </div>
+<div>
+                          <Field
+                            name={`items[${index}].quantityPerPiece`}
+                            as={Input}
+                            type="number"
+                            label="Quantity Per Piece"
+                            variant="standard"
+                            fullWidth
+                          />
+                          <ErrorMessage
+                            name={`items[${index}].quantityPerPiece`}
+                            component="div"
+                            className="text-red-600 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Field
+                            name={`items[${index}].piecesPerBox`}
+                            as={Input}
+                            type="number"
+                            label="Pieces Per Box"
+                            variant="standard"
+                            fullWidth
+                          />
+                          <ErrorMessage
+                            name={`items[${index}].piecesPerBox`}
+                            component="div"
+                            className="text-red-600 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Field
+                            name={`items[${index}].numberOfBoxes`}
+                            as={Input}
+                            type="number"
+                            label="Number of Boxes"
+                            variant="standard"
+                            fullWidth
+                          />
+                          <ErrorMessage
+                            name={`items[${index}].numberOfBoxes`}
+                            component="div"
+                            className="text-red-600 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Field
+                            name={`items[${index}].weightPerMl`}
+                            as={Input}
+                            type="number"
+                            label="Weight of 1 Ml of Oil (grams)"
+                            variant="standard"
+                            fullWidth
+                          />
+                          <ErrorMessage
+                            name={`items[${index}].weightPerMl`}
+                            component="div"
+                            className="text-red-600 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Field
+                            name={`items[${index}].finalWeightMetric`}
+                            as={Input}
+                            type="number"
+                            label="Final Weight in Metric Tons"
+                            variant="standard"
+                            fullWidth
+                            disabled
+                          />
+                          <ErrorMessage
+                            name={`items[${index}].finalWeightMetric`}
+                            component="div"
+                            className="text-red-600 text-sm"
+                          />
+                        </div>
                         <Button
                           variant="text"
                           color="red"
@@ -199,7 +305,18 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                     <Button
                       variant="outlined"
                       color="blue"
-                      onClick={() => push({ name: "", packaging: "box", weight: "", quantity: "", staticPrice:"" })}
+                      onClick={() => push({ 
+                        name: "", 
+                        packaging: "box", 
+                        weight: "", 
+                        quantity: "", 
+                        staticPrice: "",
+                        quantityPerPiece: "",
+                        piecesPerBox: "",
+                        numberOfBoxes: "",
+                        weightPerMl: "",
+                        finalWeightMetric: "",
+                      })}
                     >
                       Add Item
                     </Button>
@@ -305,21 +422,6 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
               </div>
               <div>
                 <Field
-                  name="organization"
-                  as={Input}
-                  type="text"
-                  label="Organization"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="organization"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
                   name="warehouse"
                   as={Input}
                   type="text"
@@ -367,7 +469,7 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                 <Field
                   name="description"
                   as={Textarea}
-                  label="Description"
+                  label="Description (Optional)"
                   variant="standard"
                   fullWidth
                 />

@@ -13,6 +13,7 @@ import {
 } from "@material-tailwind/react";
 import { getWarehouseById } from "@/services/warehouseService";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export function InventoryManagement() {
   const [currentWarehouse, setCurrentWarehouse] = useState(null);
@@ -83,7 +84,7 @@ export function InventoryManagement() {
           [index]: "",
         });
       } else {
-        alert("Insufficient quantity to transfer.");
+        toast.error("Insufficient quantity to transfer.");
       }
     }
   };
@@ -138,7 +139,7 @@ export function InventoryManagement() {
                           />
                           )}
                         </td>
-                        <td className="px-4 py-2 border">
+                        <td className="px-4 py-2 border flex flex-row justify-center">
                           <Button
                             color="green"
                             onClick={() => handleTransfer(index)}

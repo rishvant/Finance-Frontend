@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
@@ -8,6 +8,8 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useEffect } from "react";
+import { useUser } from "@clerk/clerk-react";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -17,6 +19,15 @@ export function Sidenav({ brandImg, brandName, routes }) {
     white: "bg-white shadow-sm",
     transparent: "bg-transparent",
   };
+
+  const navigate = useNavigate();
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth/sign-in"); 
+    }
+  }, [user, navigate]);
 
   return (
     <aside

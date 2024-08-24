@@ -24,7 +24,7 @@ export function WarehouseMaster() {
   const [selectedWarehouseID, setSelectedWarehouseID] = useState("");
   const [filteredWarehouses, setFilteredWarehouses] = useState([]);
   const [currentWarehouse, setCurrentWarehouse] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   // Check if a warehouse ID is stored in local storage

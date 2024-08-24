@@ -56,7 +56,6 @@ export function WarehouseMaster() {
           selectedState,
           selectedCity
         );
-        console.log(warehousesData?.warehouses);
         setFilteredWarehouses(warehousesData?.warehouses);
         setLoading(false); // Data loaded
       } else {

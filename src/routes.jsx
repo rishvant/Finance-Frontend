@@ -14,6 +14,8 @@ import InventoryManagement from "./pages/inventory/InventoryManagement";
 import { MdInventory, MdDashboard } from "react-icons/md";
 import SignIn from "./pages/auth/sign-in";
 import { SignUp } from "./pages/auth";
+import { Booking } from "./pages/booking/Booking";
+import { BiSolidBook } from "react-icons/bi";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -46,6 +48,12 @@ export const routes = [
         name: "orders",
         path: "/orders",
         element: <OrderTable />,
+      },
+      {
+        icon: <BiSolidBook {...icon} />,
+        name: "bookings",
+        path: "/bookings",
+        element: <Booking />,
       },
       // {
       //   icon: <UserCircleIcon {...icon} />,

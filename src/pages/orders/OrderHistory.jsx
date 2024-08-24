@@ -150,6 +150,8 @@ useEffect(() => {
       const filteredOrders = statusFilter === "All"
         ? ordersData
         : ordersData.filter(order => order.status === statusFilter);
+      
+      filteredOrders.sort((a, b) => new Date(b.companyBargainDate) - new Date(a.companyBargainDate));
 
       setOrders(filteredOrders);
 

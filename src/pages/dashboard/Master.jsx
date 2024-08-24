@@ -6,7 +6,7 @@ import {
   Typography,
   Input,
   Button,
-  Spinner, // Import Spinner component from Material Tailwind
+  Spinner,
 } from "@material-tailwind/react";
 import {
   createWarehouse,
@@ -14,16 +14,10 @@ import {
   getWarehouseById,
 } from "@/services/warehouseService";
 import { useNavigate } from "react-router-dom";
+import statesAndCities from "@/data/statecities.json";
 
 export function WarehouseMaster() {
-  const states = ["Maharashtra", "Karnataka", "Tamil Nadu"];
-  const citiesData = {
-    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
-    Karnataka: ["Bengaluru", "Mysuru", "Mangaluru"],
-    TamilNadu: ["Chennai", "Coimbatore", "Madurai"],
-  };
-
-  // State management
+  const states = Object.keys(statesAndCities);
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [warehouseName, setWarehouseName] = useState("");
@@ -174,7 +168,7 @@ export function WarehouseMaster() {
                   disabled={!selectedState}
                 >
                   <option value="">Select City</option>
-                  {citiesData[selectedState]?.map((city) => (
+                  {statesAndCities[selectedState]?.map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>

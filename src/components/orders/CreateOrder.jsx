@@ -420,7 +420,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                   className="text-red-600 text-sm"
                 />
               </div>
-              <div>
+              {/* <div>
                 <Field
                   name="warehouse"
                   as={Input}
@@ -434,7 +434,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                   component="div"
                   className="text-red-600 text-sm"
                 />
-              </div>
+              </div> */}
               <div>
                 <Field
                   name="transportType"

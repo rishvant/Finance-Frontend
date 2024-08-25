@@ -343,7 +343,7 @@ return (
                           </td>
                         </tr>
                           {isOpen && (
-                            <tr>
+                            <tr className="bg-gray-100">
                               <td colSpan="11">
                                 <div className="p-4 border-t border-blue-gray-200">
                                   <Typography variant="h6" className="mb-4">
@@ -416,7 +416,7 @@ return (
           </CardBody>
         </Card>
       ) : (
-        <CreateOrderForm close={() => setShowCreateOrderForm(false)} />
+        <CreateOrderForm setShowCreateOrderForm={setShowCreateOrderForm} close={() => setShowCreateOrderForm(false)} />
       )}
       {showEditOrderForm && selectedOrder && (
         <EditOrderForm

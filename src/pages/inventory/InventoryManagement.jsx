@@ -11,7 +11,7 @@ import {
   TabsHeader,
   Tab,
 } from "@material-tailwind/react";
-import { getWarehouseById } from "@/services/warehouseService";
+import { getWarehouseById, updateInventory } from "@/services/warehouseService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -32,7 +32,7 @@ export function InventoryManagement() {
       });
     } else {
       setLoading(false);
-      navigate("/select-warehouse");
+      navigate("/");
     }
   }, [navigate]);
 
@@ -43,7 +43,7 @@ export function InventoryManagement() {
     });
   };
 
-  const handleTransfer = (index) => {
+  const handleTransfer = async (index) => {
     const transferQty = parseFloat(transferQuantities[index] || 0);
 
     if (transferQty > 0) {
@@ -83,6 +83,20 @@ export function InventoryManagement() {
           ...transferQuantities,
           [index]: "",
         });
+        try {
+          // Call the API to update the inventory on the server
+          await updateInventory(currentWarehouse._id, {
+            itemName: item.itemName,
+            weight: item.weight,
+            quantity: transferQty,
+            billType: "Billed",
+          });
+
+          toast.success("Transfer successful and inventory updated!");
+        } catch (error) {
+          toast.error("Failed to update inventory on the server.");
+          console.error("Error updating inventory:", error);
+        }
       } else {
         toast.error("Insufficient quantity to transfer.");
       }

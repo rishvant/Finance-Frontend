@@ -11,7 +11,6 @@ import {
 } from "@material-tailwind/react";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { createOrder } from "@/services/orderService";
 import { createBooking } from "@/services/bookingService";
 
 // Validation schema for form fields
@@ -93,16 +92,16 @@ const initialValues = {
   items: [
     {
       name: "",
-      packaging: "box", // Default value
-      type: "", // Optional field
+      packaging: "box",
+      type: "",
       weight: "",
       staticPrice: "",
       quantity: "",
     },
   ],
-  validity: 21, // Default value
-  deliveryOption: "Pickup", // Default or change as needed
-  warehouse: localStorage.getItem("warehouse") || "", // Conditional based on deliveryOption
+  validity: 21,
+  deliveryOption: "Pickup",
+  warehouse: localStorage.getItem("warehouse") || "",
   deliveryAddress: {
     addressLine1: "",
     addressLine2: "",
@@ -123,24 +122,9 @@ const initialValues = {
     },
   ],
   description: "",
-  status: "created", // Default value
-  reminderDays: [7, 3, 1], // Default value
+  status: "created",
+  reminderDays: [7, 3, 1],
 };
-
-  // const calculateWeight = (values, index) => {
-  //   const item = values.items[index];
-  //   const category = parseFloat(item.quantityPerPiece || 0);
-  //   const pieces = parseInt(item.piecesPerBox || 0);
-  //   const boxes = parseInt(item.numberOfBoxes || 0);
-  //   const weightPerMl = parseFloat(item.weightPerMl || 0);
-
-  //   const totalMl = category * pieces * boxes;
-  //   const totalGrams = totalMl * weightPerMl;
-  //   const totalKg = totalGrams / 1000;
-  //   const totalMt = totalKg / 1000;
-
-  //   return totalMt;
-  // };
 
 const handleSubmit = async (values, { setSubmitting }) => {
     try {
@@ -395,62 +379,45 @@ const handleSubmit = async (values, { setSubmitting }) => {
               </div>
               <div>
                 <Field
-                  name="sellerName"
+                  name="buyer.buyer"
                   as={Input}
                   type="text"
-                  label="Seller Name"
+                  label="Buyer Name"
                   variant="standard"
                   fullWidth
                 />
                 <ErrorMessage
-                  name="sellerName"
+                  name="buyer.buyer"
                   component="div"
                   className="text-red-600 text-sm"
                 />
               </div>
               <div>
                 <Field
-                  name="sellerLocation"
+                  name="buyer.buyerLocation"
                   as={Input}
                   type="text"
-                  label="Seller Location"
+                  label="Buyer Location"
                   variant="standard"
                   fullWidth
                 />
                 <ErrorMessage
-                  name="sellerLocation"
+                  name="buyer.buyerLocation"
                   component="div"
                   className="text-red-600 text-sm"
                 />
               </div>
               <div>
                 <Field
-                  name="sellerContact"
+                  name="buyer.buyerContact"
                   as={Input}
                   type="text"
-                  label="Seller Contact"
+                  label="Buyer Contact"
                   variant="standard"
                   fullWidth
                 />
                 <ErrorMessage
-                  name="sellerContact"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="billType"
-                  as={Select}
-                  label="Bill Type"
-                  variant="standard"
-                  fullWidth
-                >
-                  <Option value="Virtual Billed">Virtual Billed</Option>
-                  <Option value="Billed">Billed</Option>
-                </Field>
-                <ErrorMessage
-                  name="billType"
+                  name="buyer.buyerContact"
                   component="div"
                   className="text-red-600 text-sm"
                 />
@@ -476,45 +443,17 @@ const handleSubmit = async (values, { setSubmitting }) => {
               </div>
               <div>
                 <Field
-                  name="warehouse"
-                  as={Input}
-                  type="text"
-                  label="Warehouse"
+                  name="deliveryOption"
+                  as={Select}
+                  label="Delivery Type"
                   variant="standard"
                   fullWidth
-                />
+                >
+                  <Option value="Pickup">Pickup</Option>
+                  <Option value="Delivery">Delivery</Option>
+                </Field>
                 <ErrorMessage
-                  name="warehouse"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="transportType"
-                  as={Input}
-                  type="text"
-                  label="Transport Type"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="transportType"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="transportLocation"
-                  as={Input}
-                  type="text"
-                  label="Transport Location"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="transportLocation"
+                  name="deliveryOption"
                   component="div"
                   className="text-red-600 text-sm"
                 />
@@ -550,7 +489,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                 fullWidth
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Creating..." : "Create Order"}
+                {isSubmitting ? "Creating..." : "Create Booking"}
               </Button>
             </CardFooter>
           </Form>

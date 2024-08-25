@@ -16,6 +16,7 @@ import SignIn from "./pages/auth/sign-in";
 import { SignUp } from "./pages/auth";
 import { Booking } from "./pages/booking/Booking";
 import { BiSolidBook } from "react-icons/bi";
+import { MdAnalytics } from "react-icons/md";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -32,9 +33,9 @@ export const routes = [
         element: <WarehouseMaster />,
       },
       {
-        icon: <MdDashboard {...icon} />,
-        name: "dashboard",
-        path: "/dashboard",
+        icon: <MdAnalytics {...icon} />,
+        name: "analytics",
+        path: "/analytics",
         element: <Home />,
       },
       {

@@ -38,3 +38,11 @@ export const fetchWarehouse = async (state, city) => {
     }
 };
 
+export const updateInventory = async (id, data) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/warehouse/updateInventoryItem/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};

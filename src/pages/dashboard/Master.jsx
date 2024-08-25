@@ -65,7 +65,7 @@ export function WarehouseMaster() {
     };
 
     fetchFilteredWarehouses();
-  }, [warehouseName, selectedCity]);
+  }, [selectedCity]);
 
   const handleWarehouseSubmit = async () => {
     setLoading(true); // Start loading
@@ -187,23 +187,32 @@ export function WarehouseMaster() {
                   placeholder="Enter or select a warehouse"
                   disabled={!selectedCity}
                 />
-                {filteredWarehouses?.length > 0 && (
-                  <ul className="border rounded-md mt-2 max-h-40 overflow-y-auto">
-                    {filteredWarehouses?.map((warehouse) => (
-                      <li
-                        key={warehouse._id}
-                        className="px-3 py-2 cursor-pointer hover:bg-gray-200"
-                        onClick={() => {
-                          setWarehouseName(warehouse.name);
-                          setSelectedWarehouseID(warehouse._id);
-                        }}
-                      >
-                        {warehouse.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                    {filteredWarehouses?.length > 0 && (
+                  <div className="mt-2">
+                    <Typography variant="small" className="mb-2">
+                      Select Existing Warehouse
+                    </Typography>
+                    <select
+                      className="border rounded-md px-3 py-2 w-full"
+                      value={selectedWarehouseID}
+                      onChange={(e) => {
+                        const selectedOption = filteredWarehouses.find(
+                          (warehouse) => warehouse._id === e.target.value
+                        );
+                        setWarehouseName(selectedOption?.name || "");
+                        setSelectedWarehouseID(e.target.value);
+                      }}
+                    >
+                      <option value="">Select a Warehouse</option>
+                      {filteredWarehouses.map((warehouse) => (
+                        <option key={warehouse._id} value={warehouse._id}>
+                          {warehouse.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                    )}
+                  </div>
 
               {/* Submit Button */}
               <Button

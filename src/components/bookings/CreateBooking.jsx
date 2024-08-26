@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardBody,
@@ -12,6 +12,7 @@ import {
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { createBooking } from "@/services/bookingService";
+import { getWarehouseById } from "@/services/warehouseService";
 
 // Validation schema for form fields
 const validationSchema = Yup.object().shape({
@@ -32,32 +33,15 @@ const validationSchema = Yup.object().shape({
       quantity: Yup.number().required("Quantity is required").positive().integer(),
     })
   ),
-  validity: Yup.number().default(21),
-  deliveryOption: Yup.string()
-    .oneOf(["Pickup", "Delivery"])
-    .required("Delivery Option is required"),
-  warehouse: Yup.string().when('deliveryOption', {
-    is: "Pickup",
-    then: Yup.string().required("Warehouse is required for Pickup option"),
-  }),
+  validity: Yup.number().default(),
+  deliveryOption: Yup.string().required("Delivery Option is required"),
+  warehouse: Yup.string().required("Warehouse is required for Pickup option"),
   deliveryAddress: Yup.object().shape({
-    addressLine1: Yup.string().when('deliveryOption', {
-      is: "Delivery",
-      then: Yup.string().required("Address Line 1 is required for Delivery option"),
-    }),
+    addressLine1: Yup.string().required("Address Line 1 is required for Delivery option"),
     addressLine2: Yup.string(),
-    city: Yup.string().when('deliveryOption', {
-      is: "Delivery",
-      then: Yup.string().required("City is required for Delivery option"),
-    }),
-    state: Yup.string().when('deliveryOption', {
-      is: "Delivery",
-      then: Yup.string().required("State is required for Delivery option"),
-    }),
-    pinCode: Yup.string().when('deliveryOption', {
-      is: "Delivery",
-      then: Yup.string().required("Pin Code is required for Delivery option"),
-    }),
+    city: Yup.string().required("City is required for Delivery option"),
+    state: Yup.string().required("State is required for Delivery option"),
+    pinCode: Yup.string().required("Pin Code is required for Delivery option"),
   }),
   virtualInventoryQuantities: Yup.array().of(
     Yup.object().shape({
@@ -81,52 +65,81 @@ const validationSchema = Yup.object().shape({
 });
 
 export function CreateBookingForm({ setShowCreateBookingForm }) {
-const initialValues = {
-  companyBargainDate: "",
-  companyBargainNo: "",
-  buyer: {
-    buyer: "",
-    buyerLocation: "",
-    buyerContact: "",
-  },
-  items: [
-    {
-      name: "",
-      packaging: "box",
-      type: "",
-      weight: "",
-      staticPrice: "",
-      quantity: "",
+  const [itemOptions, setItemOptions] = useState([]);
+  
+  const initialValues = {
+    companyBargainDate: "",
+    companyBargainNo: "",
+    buyer: {
+      buyer: "",
+      buyerLocation: "",
+      buyerContact: "",
     },
-  ],
-  validity: 21,
-  deliveryOption: "Pickup",
-  warehouse: localStorage.getItem("warehouse") || "",
-  deliveryAddress: {
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    pinCode: "",
-  },
-  virtualInventoryQuantities: [
-    {
-      itemName: "",
-      quantity: "",
+    items: [
+      {
+        name: "",
+        packaging: "box",
+        type: "",
+        weight: "",
+        staticPrice: "",
+        quantity: "",
+      },
+    ],
+    validity: 21,
+    deliveryOption: "Pickup",
+    warehouse: localStorage.getItem("warehouse") || "",
+    deliveryAddress: {
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      state: "",
+      pinCode: "",
     },
-  ],
-  billedInventoryQuantities: [
-    {
-      itemName: "",
-      quantity: "",
-    },
-  ],
-  description: "",
-  status: "created",
-  reminderDays: [7, 3, 1],
-};
+    virtualInventoryQuantities: [
+      {
+        itemName: "",
+        quantity: "",
+      },
+    ],
+    billedInventoryQuantities: [
+      {
+        itemName: "",
+        quantity: "",
+      },
+    ],
+    description: "",
+    status: "created",
+    reminderDays: [7, 3, 1],
+  };
+  
+  const calculateWeight = (values, index) => {
+    const item = values.items[index];
+    const category = parseFloat(item.quantityPerPiece || 0);
+    const pieces = parseInt(item.piecesPerBox || 0);
+    const boxes = parseInt(item.numberOfBoxes || 0);
+    const weightPerMl = parseFloat(item.weightPerMl || 0);
 
-const handleSubmit = async (values, { setSubmitting }) => {
+    const totalMl = category * pieces * boxes;
+    const totalGrams = totalMl * weightPerMl;
+    const totalKg = totalGrams / 1000;
+    const totalMt = totalKg / 1000;
+
+    return totalMt;
+  };
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      const response = await getWarehouseById(localStorage.getItem("warehouse"));
+      const virtual = response.virtualInventory;
+      const billed = response.billedInventory;
+      const items = [...new Set([...virtual, ...billed].map(item => item.itemName))];
+      setItemOptions(items);
+    };
+
+    fetchItems();
+  }, []);
+
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const updatedValues = {
         ...values,
@@ -150,7 +163,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
     <Card className="w-full mx-auto">
       <Formik
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        // validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ isSubmitting, values }) => (
@@ -179,13 +192,18 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       <div key={index} className="flex flex-col gap-4 border border-black/20 border-[3px] rounded-lg p-4 pb-4 mb-4">
                         <div>
                           <Field
-                            name={`items[${index}].name`}
-                            as={Input}
-                            type="text"
-                            label="Item Name"
-                            variant="standard"
-                            fullWidth
-                          />
+                        name={`items[${index}].name`}
+                        as={Select}
+                        label="Item Name"
+                        variant="standard"
+                        fullWidth
+                      >
+                        {itemOptions.map((itemName, idx) => (
+                          <Option key={idx} value={itemName}>
+                            {itemName}
+                          </Option>
+                        ))}
+                          </Field>
                           <ErrorMessage
                             name={`items[${index}].name`}
                             component="div"

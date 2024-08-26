@@ -15,6 +15,7 @@ import {
 } from "@/services/warehouseService";
 import { useNavigate } from "react-router-dom";
 import statesAndCities from "@/data/statecities.json";
+import { toast } from "react-toastify";
 
 export function WarehouseMaster() {
   const states = Object.keys(statesAndCities);
@@ -70,13 +71,13 @@ export function WarehouseMaster() {
   const handleWarehouseSubmit = async () => {
     setLoading(true); // Start loading
     if (selectedWarehouseID) {
-      alert("Existing warehouse selected. Proceeding with the selected warehouse.");
+      toast.success("Existing warehouse selected. Proceeding with the selected warehouse.");
       const response = await getWarehouseById(selectedWarehouseID);
       console.log(response._id);
       localStorage.setItem("warehouse", response._id);
       navigate("/dashboard/orders");
     } else {
-      alert("Proceeding with new warehouse creation!");
+      toast.success("Proceeding with new warehouse creation!");
       const response = await createWarehouse({
         name: warehouseName,
         location: { state: selectedState, city: selectedCity },

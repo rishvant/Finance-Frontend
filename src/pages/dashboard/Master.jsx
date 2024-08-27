@@ -7,6 +7,11 @@ import {
   Input,
   Button,
   Spinner,
+  Tabs,
+  TabsHeader,
+  Tab,
+  TabsBody,
+  TabPanel,
 } from "@material-tailwind/react";
 import {
   createWarehouse,
@@ -16,6 +21,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import statesAndCities from "@/data/statecities.json";
 import { toast } from "react-toastify";
+import ItemForm from "@/components/master/ItemForm";
+import TransportForm from "@/components/master/TransportForm";
+import WarehouseForm from "@/components/master/WarehouseForm";
 
 export function WarehouseMaster() {
   const states = Object.keys(statesAndCities);
@@ -71,7 +79,9 @@ export function WarehouseMaster() {
   const handleWarehouseSubmit = async () => {
     setLoading(true); // Start loading
     if (selectedWarehouseID) {
-      toast.success("Existing warehouse selected. Proceeding with the selected warehouse.");
+      toast.success(
+        "Existing warehouse selected. Proceeding with the selected warehouse."
+      );
       const response = await getWarehouseById(selectedWarehouseID);
       console.log(response._id);
       localStorage.setItem("warehouse", response._id);
@@ -98,6 +108,24 @@ export function WarehouseMaster() {
     localStorage.removeItem("warehouse");
   };
 
+  const data = [
+    {
+      label: "Warehouse",
+      value: "warehouse",
+      desc: `Manage warehouse.`,
+    },
+    {
+      label: "Add Items",
+      value: "addItems",
+      desc: `Add new items to the warehouse inventory.`,
+    },
+    {
+      label: "Add Transportation",
+      value: "addTransportation",
+      desc: `Manage transportation details for the warehouse.`,
+    },
+  ];
+
   return (
     <Card className="mt-12 mb-8">
       <CardHeader
@@ -109,6 +137,27 @@ export function WarehouseMaster() {
           Warehouse Management
         </Typography>
       </CardHeader>
+      <Tabs className="px-4" value="html">
+        <TabsHeader>
+          {data.map(({ label, value }) => (
+            <Tab key={value} value={value}>
+              {label}
+            </Tab>
+          ))}
+        </TabsHeader>
+        <TabsBody>
+          {data.map(({ value, desc }) => (
+            <TabPanel key={value} value={value}>
+              <Typography variant="h6" className="mb-4">
+                {desc}
+              </Typography>
+              {value === "warehouse" && <WarehouseForm />}
+              {value === "addItems" && <ItemForm />}
+              {value === "addTransportation" && <TransportForm />}
+            </TabPanel>
+          ))}
+        </TabsBody>
+      </Tabs>
       <CardBody>
         <div className="flex flex-col gap-6">
           {loading ? (
@@ -188,7 +237,7 @@ export function WarehouseMaster() {
                   placeholder="Enter or select a warehouse"
                   disabled={!selectedCity}
                 />
-                    {filteredWarehouses?.length > 0 && (
+                {filteredWarehouses?.length > 0 && (
                   <div className="mt-2">
                     <Typography variant="small" className="mb-2">
                       Select Existing Warehouse
@@ -212,8 +261,8 @@ export function WarehouseMaster() {
                       ))}
                     </select>
                   </div>
-                    )}
-                  </div>
+                )}
+              </div>
 
               {/* Submit Button */}
               <Button

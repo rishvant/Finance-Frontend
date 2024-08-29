@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const API_BASE_URL = "https://api.bargainwale.com/api";
+import { API_BASE_URL } from "./api";
 
 export const getOrders = async () => {
     try {

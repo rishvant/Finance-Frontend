@@ -117,12 +117,12 @@ export function WarehouseMaster() {
     {
       label: "Add Items",
       value: "addItems",
-      desc: `Add new items to the warehouse inventory.`,
+      desc: `Add new items`,
     },
     {
       label: "Add Transportation",
       value: "addTransportation",
-      desc: `Manage transportation details for the warehouse.`,
+      desc: `Manage transportation details`,
     },
   ];
 
@@ -134,7 +134,7 @@ export function WarehouseMaster() {
         className="mb-8 p-6 flex justify-between items-center"
       >
         <Typography variant="h6" color="white">
-          Warehouse Management
+          Master
         </Typography>
       </CardHeader>
       <Tabs className="px-4" value="html">
@@ -147,7 +147,7 @@ export function WarehouseMaster() {
         </TabsHeader>
         <TabsBody>
           {data.map(({ value, desc }) => (
-            <TabPanel key={value} value={value}>
+            <TabPanel className="min-h-[50vh]" key={value} value={value}>
               <Typography variant="h6" className="mb-4">
                 {desc}
               </Typography>
@@ -158,11 +158,11 @@ export function WarehouseMaster() {
           ))}
         </TabsBody>
       </Tabs>
-      <CardBody>
+      {/* <CardBody>
         <div className="flex flex-col gap-6">
           {loading ? (
             <div className="flex justify-center items-center">
-              <Spinner color="blue" size="lg" /> {/* Spinner while loading */}
+              <Spinner color="blue" size="lg" />
             </div>
           ) : currentWarehouse ? (
             <div>
@@ -186,7 +186,6 @@ export function WarehouseMaster() {
             </div>
           ) : (
             <>
-              {/* State Dropdown */}
               <div>
                 <Typography variant="small" className="mb-2">
                   Select State
@@ -205,7 +204,6 @@ export function WarehouseMaster() {
                 </select>
               </div>
 
-              {/* City Dropdown */}
               <div>
                 <Typography variant="small" className="mb-2">
                   Select City
@@ -225,7 +223,6 @@ export function WarehouseMaster() {
                 </select>
               </div>
 
-              {/* Warehouse Input with Dropdown */}
               <div>
                 <Typography variant="small" className="mb-2">
                   Warehouse Name
@@ -264,7 +261,6 @@ export function WarehouseMaster() {
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 variant="gradient"
                 color="blue"
@@ -276,7 +272,7 @@ export function WarehouseMaster() {
             </>
           )}
         </div>
-      </CardBody>
+      </CardBody> */}
     </Card>
   );
 }

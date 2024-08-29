@@ -217,6 +217,23 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                       className="text-red-600 text-sm"
                     />
                   </div>
+                  <div className="col-span-1">
+                    <Field
+                      name="billType"
+                      as={Select}
+                      label="Bill Type"
+                      variant="standard"
+                      fullWidth
+                    >
+                      <Option value="Virtual Billed">Virtual Billed</Option>
+                      <Option value="Billed">Billed</Option>
+                    </Field>
+                    <ErrorMessage
+                      name="billType"
+                      component="div"
+                      className="text-red-600 text-sm"
+                    />
+                  </div>
                 </div>
 
                 <FieldArray name="items">
@@ -289,7 +306,7 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                               className="text-red-600 text-sm"
                             />
                           </div>
-                          <div className="col-span-1">
+                          {/* <div className="col-span-1">
                             <Field
                               name={`items[${index}].staticPrice`}
                               as={Input}
@@ -379,63 +396,45 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                               component="div"
                               className="text-red-600 text-sm"
                             />
-                          </div>
+                          </div> */}
                           <Button
                             variant="text"
                             color="red"
                             onClick={() => remove(index)}
                             disabled={values.items.length === 1}
-                            className="col-span-2"
+                            className="col-span-2 w-fit h-fit"
                           >
                             Remove Item
                           </Button>
+                            <Button
+                              variant="outlined"
+                              color="blue"
+                              onClick={() =>
+                                push({
+                                  name: "",
+                                  packaging: "box",
+                                  weight: "",
+                                  quantity: "",
+                                  staticPrice: "",
+                                  quantityPerPiece: "",
+                                  piecesPerBox: "",
+                                  numberOfBoxes: "",
+                                  weightPerMl: "",
+                                  finalWeightMetric: "",
+                                })
+                              }
+                              className="w-fit h-fit"
+                            >
+                              Add Item
+                            </Button>
                         </div>
                       ))}
-                      <Button
-                        variant="outlined"
-                        color="blue"
-                        onClick={() =>
-                          push({
-                            name: "",
-                            packaging: "box",
-                            weight: "",
-                            quantity: "",
-                            staticPrice: "",
-                            quantityPerPiece: "",
-                            piecesPerBox: "",
-                            numberOfBoxes: "",
-                            weightPerMl: "",
-                            finalWeightMetric: "",
-                          })
-                        }
-                        className="col-span-2"
-                      >
-                        Add Item
-                      </Button>
                     </>
                   )}
                 </FieldArray>
               </div>
 
               <div className="flex flex-row gap-5">
-                <div className="col-span-1">
-                  <Field
-                    name="billType"
-                    as={Select}
-                    label="Bill Type"
-                    variant="standard"
-                    fullWidth
-                  >
-                    <Option value="Virtual Billed">Virtual Billed</Option>
-                    <Option value="Billed">Billed</Option>
-                  </Field>
-                  <ErrorMessage
-                    name="billType"
-                    component="div"
-                    className="text-red-600 text-sm"
-                  />
-                </div>
-
                 <div className="col-span-1">
                   <Field
                     name="status"
@@ -455,7 +454,7 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                     className="text-red-600 text-sm"
                   />
                 </div>
-                <div className="col-span-1">
+                {/* <div className="col-span-1">
                   <Field
                     name="transportType"
                     as={Input}
@@ -484,25 +483,25 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                     component="div"
                     className="text-red-600 text-sm"
                   />
+                </div> */}
+                <div className="flex justify-end gap-4 h-fit w-fit mt-4">
+                  <Button
+                    variant="outlined"
+                    color="blue"
+                    onClick={() => resetForm()}
+                    disabled={isSubmitting}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="filled"
+                    color="blue"
+                    disabled={isSubmitting}
+                  >
+                    Create Order
+                  </Button>
                 </div>
-              </div>
-              <div className="flex justify-end gap-4 mt-4">
-                <Button
-                  variant="outlined"
-                  color="blue"
-                  onClick={() => resetForm()}
-                  disabled={isSubmitting}
-                >
-                  Reset
-                </Button>
-                <Button
-                  type="submit"
-                  variant="filled"
-                  color="blue"
-                  disabled={isSubmitting}
-                >
-                  Submit
-                </Button>
               </div>
             </CardBody>
           </Form>

@@ -15,8 +15,9 @@ import { MdInventory, MdDashboard } from "react-icons/md";
 import SignIn from "./pages/auth/sign-in";
 import { SignUp } from "./pages/auth";
 import { Booking } from "./pages/booking/Booking";
-import { BiSolidBook } from "react-icons/bi";
+import { BiSolidBook, BiSolidPurchaseTag } from "react-icons/bi";
 import { MdAnalytics } from "react-icons/md";
+import { TbReceiptRupee } from "react-icons/tb";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -54,6 +55,18 @@ export const routes = [
         icon: <BiSolidBook {...icon} />,
         name: "bookings",
         path: "/bookings",
+        element: <Booking />,
+      },
+      {
+        icon: <BiSolidPurchaseTag {...icon} />,
+        name: "purchase",
+        path: "/purchase",
+        element: <Booking />,
+      },
+      {
+        icon: <TbReceiptRupee {...icon} />,
+        name: "sell",
+        path: "/sell",
         element: <Booking />,
       },
       // {

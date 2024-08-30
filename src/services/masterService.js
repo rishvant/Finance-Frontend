@@ -75,7 +75,7 @@ export const deleteTransport = async (id) => {
     }
 };
 
-// transport
+// buyer
 export const getBuyer = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/buyers`);

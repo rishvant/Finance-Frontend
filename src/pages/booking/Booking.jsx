@@ -16,7 +16,6 @@ import * as XLSX from 'xlsx';
 import excel from "../../assets/excel.png";
 import { getBookings } from "@/services/bookingService";
 import { EditOrderForm } from "@/components/orders/EditOrder";
-import { CreateOrderForm } from "@/components/orders/CreateOrder";
 import { CreateBookingForm } from "@/components/bookings/CreateBooking";
 
 export function Booking() {

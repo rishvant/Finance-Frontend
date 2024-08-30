@@ -198,11 +198,11 @@ const ItemForm = () => {
       </form>
 
       {/* Items Table */}
-      <div className="mt-8">
+      <div className="w-full overflow-x-scroll mt-8">
         {items?.length > 0 ? (
-          <table className="min-w-full bg-white">
+          <table className="w-full bg-white">
             <thead>
-              <tr>
+              <tr className="grid grid-cols-6">
                 <th className="py-2 px-4 border-b text-start">Name</th>
                 <th className="py-2 px-4 border-b text-start">Packaging</th>
                 <th className="py-2 px-4 border-b text-start">Type</th>
@@ -213,7 +213,7 @@ const ItemForm = () => {
             </thead>
             <tbody>
               {items?.map((item) => (
-                <tr key={item._id}>
+                <tr key={item._id} className="grid grid-cols-6">
                   <td className="py-2 px-4 border-b">
                     {item.isEditing ? (
                       <Input

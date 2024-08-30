@@ -3,6 +3,8 @@ import {
   Input,
   Spinner,
   IconButton,
+  Select,
+  Option,
   Typography,
 } from "@material-tailwind/react";
 import { useState, useEffect } from "react";
@@ -10,8 +12,9 @@ import { toast } from "react-toastify";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import {
   createWarehouse,
-  deleteWarehouse,
   getWarehouses,
+  updateWarehouse,
+  deleteWarehouse,
 } from "@/services/warehouseService";
 
 const WarehouseForm = () => {
@@ -19,12 +22,9 @@ const WarehouseForm = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [form, setForm] = useState({
     name: "",
-    location: {
-      state: "",
-      city: "",
-    },
+    state: "",
+    city: "",
     warehouseManager: "",
-    organization: "64d22f5a8b3b9f47a3b0e7f1",
   });
   const [editingId, setEditingId] = useState(null);
 
@@ -54,10 +54,9 @@ const WarehouseForm = () => {
       try {
         const data = {
           name: warehouseToEdit.name,
-          location: {
-            state: warehouseToEdit.location.state,
-            city: warehouseToEdit.location.city,
-          },
+          state: warehouseToEdit.location.state,
+          city: warehouseToEdit.location.city,
+          warehouseManager: warehouseToEdit.warehouseManager,
         };
         await updateWarehouse(data, id);
         toast.success("Warehouse updated successfully!");
@@ -81,16 +80,21 @@ const WarehouseForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await createWarehouse(form);
+      const response = await createWarehouse({
+        name: form.name,
+        location: {
+          state: form.state,
+          city: form.city,
+        },
+        warehouseManager: form.warehouseManager,
+      });
+      console.log(response);
       toast.success("Warehouse added successfully!");
       setForm({
         name: "",
-        location: {
-          state: "",
-          city: "",
-        },
+        state: "",
+        city: "",
         warehouseManager: "",
-        organization: "",
       });
       fetchWarehouses();
     } catch (error) {
@@ -117,22 +121,22 @@ const WarehouseForm = () => {
     }
   };
 
-  const handleWarehouseChange = (e, id) => {
-    const { name, value } = e.target;
+  const handleWarehouseChange = (e, id, fieldName) => {
+    let name, value;
 
+    if (e && e.target) {
+      name = e.target.name;
+      value = e.target.value;
+    } else {
+      name = fieldName;
+      value = e;
+    }
     setWarehouses((prevWarehouses) =>
       prevWarehouses.map((warehouse) =>
         warehouse._id === id
           ? {
               ...warehouse,
-              [name.includes("location.") ? "location" : name]: name.includes(
-                "location."
-              )
-                ? {
-                    ...warehouse.location,
-                    [name.split(".")[1]]: value,
-                  }
-                : value,
+              [name]: value,
             }
           : warehouse
       )
@@ -153,7 +157,7 @@ const WarehouseForm = () => {
   return (
     <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           <Input
             name="name"
             label="Warehouse Name"
@@ -178,6 +182,13 @@ const WarehouseForm = () => {
             onChange={handleChange}
             required
           />
+          <Input
+            name="warehouseManager"
+            label="Warehouse Manager"
+            type="text"
+            value={form.warehouseManager}
+            onChange={handleChange}
+          />
           <Button color="blue" type="submit">
             {loading ? <Spinner /> : <span>Add Warehouse</span>}
           </Button>
@@ -189,16 +200,17 @@ const WarehouseForm = () => {
         {warehouses?.length > 0 ? (
           <table className="min-w-full bg-white">
             <thead>
-              <tr>
+              <tr className="grid grid-cols-5">
                 <th className="py-2 px-4 border-b text-start">Name</th>
                 <th className="py-2 px-4 border-b text-start">State</th>
                 <th className="py-2 px-4 border-b text-start">City</th>
+                <th className="py-2 px-4 border-b text-start">Manager</th>
                 <th className="py-2 px-4 border-b text-start">Actions</th>
               </tr>
             </thead>
             <tbody>
               {warehouses?.map((warehouse) => (
-                <tr key={warehouse._id}>
+                <tr key={warehouse._id} className="grid grid-cols-5">
                   <td className="py-2 px-4 border-b">
                     {warehouse.isEditing ? (
                       <Input
@@ -239,6 +251,20 @@ const WarehouseForm = () => {
                       />
                     ) : (
                       <span>{warehouse.location.city}</span>
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {warehouse.isEditing ? (
+                      <Input
+                        name="warehouseManager"
+                        type="text"
+                        value={warehouse.warehouseManager}
+                        onChange={(e) =>
+                          handleWarehouseChange(e, warehouse._id)
+                        }
+                      />
+                    ) : (
+                      <span>{warehouse.warehouseManager || "N/A"}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b flex gap-2">

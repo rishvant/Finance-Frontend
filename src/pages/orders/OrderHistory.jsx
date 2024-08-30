@@ -8,7 +8,6 @@ import {
   Chip,
   IconButton,
 } from "@material-tailwind/react";
-import { CreateOrderForm } from "@/components/orders/CreateOrder";
 import { getOrders, updateBillTypePartWise } from "@/services/orderService";
 import { EditOrderForm } from "@/components/orders/EditOrder";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
@@ -16,6 +15,7 @@ import { toast } from "react-toastify";
 import Datepicker from "react-tailwindcss-datepicker";
 import * as XLSX from "xlsx";
 import excel from "../../assets/excel.png";
+import CreateOrderForm from "@/components/orders/CreateOrder";
 
 export function OrderTable() {
   const [showCreateOrderForm, setShowCreateOrderForm] = useState(false);

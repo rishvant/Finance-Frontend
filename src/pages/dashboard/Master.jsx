@@ -37,40 +37,37 @@ export function WarehouseMaster() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Check if a warehouse ID is stored in local storage
   useEffect(() => {
     const storedWarehouseID = localStorage.getItem("warehouse");
     if (storedWarehouseID) {
       getWarehouseById(storedWarehouseID).then((warehouse) => {
         setCurrentWarehouse(warehouse);
         setSelectedWarehouseID(storedWarehouseID);
-        setLoading(false); // Data loaded
+        setLoading(false);
       });
     } else {
-      setLoading(false); // No warehouse ID in local storage, stop loading
+      setLoading(false);
     }
   }, []);
 
-  // Update cities based on selected state
   useEffect(() => {
     setSelectedCity("");
     setFilteredWarehouses([]);
   }, [selectedState]);
 
-  // Filter warehouses based on input
   useEffect(() => {
     const fetchFilteredWarehouses = async () => {
       if (selectedCity && selectedState) {
-        setLoading(true); // Start loading
+        setLoading(true);
         const warehousesData = await fetchWarehouse(
           selectedState,
           selectedCity
         );
         setFilteredWarehouses(warehousesData?.warehouses);
-        setLoading(false); // Data loaded
+        setLoading(false);
       } else {
         setFilteredWarehouses([]);
-        setLoading(false); // No data to load, stop loading
+        setLoading(false);
       }
     };
 
@@ -78,7 +75,7 @@ export function WarehouseMaster() {
   }, [selectedCity]);
 
   const handleWarehouseSubmit = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
     if (selectedWarehouseID) {
       toast.success(
         "Existing warehouse selected. Proceeding with the selected warehouse."
@@ -97,7 +94,7 @@ export function WarehouseMaster() {
       localStorage.setItem("warehouse", response.warehouse._id);
       navigate("/orders");
     }
-    setLoading(false); // Stop loading
+    setLoading(false);
   };
 
   const handleChangeWarehouse = () => {
@@ -143,7 +140,7 @@ export function WarehouseMaster() {
           Master
         </Typography>
       </CardHeader>
-      <Tabs className="px-4" value="html">
+      <Tabs className="px-4" value="warehouse">
         <TabsHeader>
           {data.map(({ label, value }) => (
             <Tab key={value} value={value}>

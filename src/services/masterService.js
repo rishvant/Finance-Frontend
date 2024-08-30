@@ -74,3 +74,40 @@ export const deleteTransport = async (id) => {
         console.log(error);
     }
 };
+
+// transport
+export const getBuyer = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/buyers`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const createBuyer = async (data) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/buyers`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const updateBuyer = async (data, id) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/buyers/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const deleteBuyer = async (id) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/buyers/${id}`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};

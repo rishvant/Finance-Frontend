@@ -45,3 +45,21 @@ export const updateInventory = async (id, data) => {
         console.log(error);
     }
 };
+
+export const updateWarehouse = async (data, id) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/warehouse/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const deleteWarehouse = async (id) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/warehouse/${id}`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};

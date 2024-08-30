@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardBody,
@@ -12,6 +12,7 @@ import {
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { createOrder } from "@/services/orderService";
+import { getItems } from "@/services/masterService";
 
 // Validation schema for form fields
 const validationSchema = Yup.object().shape({
@@ -93,6 +94,20 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
     transportType: "",
     transportLocation: "",
   };
+  const [items, setItems] = useState();
+
+  const fetchData = async () => {
+    try {
+      const items = await getItems();
+      setItems(items);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const calculateWeight = (values, index) => {
     const item = values.items[index];
@@ -245,7 +260,7 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                           className="flex flex-row flex-wrap gap-x-4 gap-y-2 border border-black/20 border-[3px] rounded-lg p-4 mt-2 mb-4"
                         >
                           <div className="col-span-1">
-                            <Field
+                            {/* <Field
                               name={`items[${index}].name`}
                               as={Input}
                               type="text"
@@ -257,7 +272,30 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                               name={`items[${index}].name`}
                               component="div"
                               className="text-red-600 text-sm"
-                            />
+                            /> */}
+
+                            {items?.length > 0 && (
+                              <>
+                                <Field
+                                  name={`items[${index}].name`}
+                                  as={Select}
+                                  label="Item Name"
+                                  variant="standard"
+                                  fullWidth
+                                >
+                                  {items?.map((item) => (
+                                    <Option key={item._id} value={item.name}>
+                                      {item.name}
+                                    </Option>
+                                  ))}
+                                </Field>
+                                <ErrorMessage
+                                  name="status"
+                                  component="div"
+                                  className="text-red-600 text-sm"
+                                />
+                              </>
+                            )}
                           </div>
                           <div className="col-span-1">
                             <Field
@@ -406,27 +444,27 @@ export function CreateOrderForm({ setShowCreateOrderForm }) {
                           >
                             Remove Item
                           </Button>
-                            <Button
-                              variant="outlined"
-                              color="blue"
-                              onClick={() =>
-                                push({
-                                  name: "",
-                                  packaging: "box",
-                                  weight: "",
-                                  quantity: "",
-                                  staticPrice: "",
-                                  quantityPerPiece: "",
-                                  piecesPerBox: "",
-                                  numberOfBoxes: "",
-                                  weightPerMl: "",
-                                  finalWeightMetric: "",
-                                })
-                              }
-                              className="w-fit h-fit"
-                            >
-                              Add Item
-                            </Button>
+                          <Button
+                            variant="outlined"
+                            color="blue"
+                            onClick={() =>
+                              push({
+                                name: "",
+                                packaging: "box",
+                                weight: "",
+                                quantity: "",
+                                staticPrice: "",
+                                quantityPerPiece: "",
+                                piecesPerBox: "",
+                                numberOfBoxes: "",
+                                weightPerMl: "",
+                                finalWeightMetric: "",
+                              })
+                            }
+                            className="w-fit h-fit"
+                          >
+                            Add Item
+                          </Button>
                         </div>
                       ))}
                     </>

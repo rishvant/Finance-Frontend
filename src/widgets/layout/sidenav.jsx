@@ -30,6 +30,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
     }
   }, [user, navigate]);
 
+  const handleLinkClick = () => {
+    if (openSidenav) {
+      setOpenSidenav(dispatch, false);
+    }
+  };
+
   return (
     <aside
       className={`${sidenavTypes[sidenavType]} ${
@@ -51,16 +57,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
             )}
           </Typography>
         </Link>
-        {/* <IconButton
-          variant="text"
-          color="white"
-          size="sm"
-          ripple={false}
-          className="absolute right-0 top-0 grid rounded-br-none rounded-tl-none"
-          onClick={() => setOpenSidenav(dispatch, !openSidenav)}
-        >
-          <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-black" />
-        </IconButton> */}
         <div className="absolute -right-[0.7rem] top-14 p-[2px] w-fit h-fit rounded-md border-[2px] border-black bg-white">
           <FaAngleRight
             className={` text-[1.4rem] z-10 ${
@@ -87,7 +83,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             {title !== "auth pages" &&
               pages.map(({ icon, name, path }) => (
                 <li key={name}>
-                  <NavLink to={`/${layout}${path}`}>
+                  <NavLink to={`/${layout}${path}`} onClick={handleLinkClick}>
                     {({ isActive }) => (
                       <Button
                         variant={isActive ? "gradient" : "text"}

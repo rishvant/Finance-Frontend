@@ -145,13 +145,14 @@ const TransportForm = () => {
   return (
     <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-6 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           <Input
             name="transport"
             label="Transport Name"
             type="text"
             value={form.transport}
             onChange={handleChange}
+            required
           />
           <Input
             name="transportType"
@@ -159,6 +160,7 @@ const TransportForm = () => {
             type="text"
             value={form.transportType}
             onChange={handleChange}
+            required
           />
           <Input
             name="transportContact"
@@ -166,6 +168,7 @@ const TransportForm = () => {
             type="tel"
             value={form.transportContact}
             onChange={handleChange}
+            required
           />
           <Input
             name="transportAgency"
@@ -173,6 +176,7 @@ const TransportForm = () => {
             type="text"
             value={form.transportAgency}
             onChange={handleChange}
+            required
           />
           <Button color="blue" type="submit">
             {loading ? <Spinner /> : <span>Add Transport</span>}

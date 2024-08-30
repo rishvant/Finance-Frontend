@@ -156,6 +156,7 @@ const ItemForm = () => {
             type="text"
             value={form.name}
             onChange={handleChange}
+            required
           />
           <Select
             name="packaging"
@@ -172,6 +173,7 @@ const ItemForm = () => {
             type="text"
             value={form.type}
             onChange={handleChange}
+            required
           />
           <Input
             name="weight"
@@ -179,6 +181,7 @@ const ItemForm = () => {
             type="number"
             value={form.weight}
             onChange={handleChange}
+            required
           />
           <Input
             name="staticPrice"
@@ -186,6 +189,7 @@ const ItemForm = () => {
             type="number"
             value={form.staticPrice}
             onChange={handleChange}
+            required
           />
           <Button color="blue" type="submit">
             {loading ? <Spinner /> : <span>Add Item</span>}

@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import ItemForm from "@/components/master/ItemForm";
 import TransportForm from "@/components/master/TransportForm";
 import WarehouseForm from "@/components/master/WarehouseForm";
+import BuyerForm from "@/components/master/BuyerForm";
 
 export function WarehouseMaster() {
   const states = Object.keys(statesAndCities);
@@ -124,6 +125,11 @@ export function WarehouseMaster() {
       value: "addTransportation",
       desc: `Manage transportation details`,
     },
+    {
+      label: "Add Buyer",
+      value: "addBuyer",
+      desc: `Manage buyer details`,
+    },
   ];
 
   return (
@@ -154,6 +160,7 @@ export function WarehouseMaster() {
               {value === "warehouse" && <WarehouseForm />}
               {value === "addItems" && <ItemForm />}
               {value === "addTransportation" && <TransportForm />}
+              {value === "addBuyer" && <BuyerForm />}
             </TabPanel>
           ))}
         </TabsBody>

@@ -25,6 +25,7 @@ import ItemForm from "@/components/master/ItemForm";
 import TransportForm from "@/components/master/TransportForm";
 import WarehouseForm from "@/components/master/WarehouseForm";
 import BuyerForm from "@/components/master/BuyerForm";
+import ManufacturerForm from "@/components/master/ManufacturerForm";
 
 export function WarehouseMaster() {
   const states = Object.keys(statesAndCities);
@@ -127,6 +128,11 @@ export function WarehouseMaster() {
       value: "addBuyer",
       desc: `Manage buyer details`,
     },
+    {
+      label: "Add Manufacturer",
+      value: "addManufacturer",
+      desc: `Manage manufacturer details`,
+    },
   ];
 
   return (
@@ -158,6 +164,7 @@ export function WarehouseMaster() {
               {value === "addItems" && <ItemForm />}
               {value === "addTransportation" && <TransportForm />}
               {value === "addBuyer" && <BuyerForm />}
+              {value === "addManufacturer" && <ManufacturerForm />}
             </TabPanel>
           ))}
         </TabsBody>

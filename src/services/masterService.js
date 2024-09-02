@@ -111,3 +111,40 @@ export const deleteBuyer = async (id) => {
         console.log(error);
     }
 };
+
+// manufacturer
+export const getManufacturer = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/manufacturers`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const createManufacturer = async (data) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/manufacturers`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const updateManufacturer = async (data, id) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/manufacturers/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const deleteManufacturer = async (id) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/manufacturers/${id}`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};

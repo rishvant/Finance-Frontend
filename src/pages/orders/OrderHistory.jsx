@@ -44,9 +44,7 @@ export function OrderTable() {
     const fetchOrders = async () => {
       try {
         const response = await getOrders();
-        const ordersData = response.filter(
-          (item) => item.warehouse === localStorage.getItem("warehouse")
-        );
+        const ordersData = response;
 
         // Filter orders based on status
         let filteredOrders =
@@ -101,6 +99,7 @@ export function OrderTable() {
 
     fetchOrders();
   }, [statusFilter, timePeriod, dateRange]);
+  
   const formatDate = (date) => {
     const d = new Date(date);
     if (isNaN(d.getTime())) {
@@ -224,7 +223,7 @@ export function OrderTable() {
             Manage Orders
           </Typography>
         </CardHeader>
-        <div className="sticky top-[20px] z-100 mb-5">
+        <div className="sticky top-[0px] z-[100] mb-5 bg-white">
           <CreateOrderForm />
         </div>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">

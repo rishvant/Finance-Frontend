@@ -11,78 +11,76 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import {
-  createBuyer,
-  deleteBuyer,
-  getBuyer,
-  updateBuyer,
+  createManufacturer,
+  deleteManufacturer,
+  getManufacturer,
+  updateManufacturer,
 } from "@/services/masterService";
 
-const BuyerForm = () => {
+const ManufacturerForm = () => {
   const [loading, setLoading] = useState(false);
-  const [buyers, setBuyers] = useState([]);
+  const [manufacturer, setManufacturer] = useState([]);
   const [form, setForm] = useState({
-    buyer: "",
-    buyerCompany: "",
+    manufacturer: "",
+    manufacturerCompany: "",
     addressLine1: "",
     addressLine2: "",
     city: "",
     state: "",
     pinCode: "",
-    buyerContact: "",
-    buyerEmail: "",
-    buyerGstno: "",
-    buyerGooglemaps: "",
+    manufacturerContact: "",
+    manufacturerEmail: "",
+    manufacturerGstno: "",
   });
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    fetchBuyers();
+    fetchManufacturers();
   }, []);
 
-  const fetchBuyers = async () => {
+  const fetchManufacturers = async () => {
     try {
-      const response = await getBuyer();
-      const buyersWithEditingState = response?.map((buyer) => ({
-        ...buyer,
+      const response = await getManufacturer();
+      const manufatcurersWithEditingState = response?.map((man) => ({
+        ...man,
         isEditing: false,
       }));
-      setBuyers(buyersWithEditingState);
+      setManufacturer(manufatcurersWithEditingState);
     } catch (error) {
-      toast.error("Error fetching buyers!");
+      toast.error("Error fetching manufacturers!");
       console.error(error);
     }
   };
 
   const toggleEditing = async (id) => {
-    const buyerToEdit = buyers.find((buyer) => buyer._id === id);
-    if (buyerToEdit.isEditing) {
+    const manToEdit = manufacturer.find((man) => man._id === id);
+    if (manToEdit.isEditing) {
       try {
         const data = {
-          buyer: buyerToEdit.buyer,
-          buyerCompany: buyerToEdit.buyerCompany,
-          buyerdeliveryAddress: {
-            addressLine1: buyerToEdit.addressLine1,
-            addressLine2: buyerToEdit.addressLine2,
-            city: buyerToEdit.city,
-            state: buyerToEdit.state,
-            pinCode: buyerToEdit.pinCode,
+          manufacturer: manToEdit.manufacturer,
+          manufacturerCompany: manToEdit.manufacturerCompany,
+          manufacturerdeliveryAddress: {
+            addressLine1: manToEdit.addressLine1,
+            addressLine2: manToEdit.addressLine2,
+            city: manToEdit.city,
+            state: manToEdit.state,
+            pinCode: manToEdit.pinCode,
           },
-          buyerContact: buyerToEdit.buyerContact,
-          buyerEmail: buyerToEdit.buyerEmail,
-          buyerGstno: buyerToEdit.buyerGstno,
-          buyerGooglemaps: buyerToEdit.buyerGooglemaps,
+          manufacturerContact: manToEdit.manufacturerContact,
+          manufacturerEmail: manToEdit.manufacturerEmail,
+          manufacturerGstno: manToEdit.manufacturerGstno,
         };
-        await updateBuyer(data, id);
-        toast.success("Buyer updated successfully!");
-        fetchBuyers();
+        await updateManufacturer(data, id);
+        toast.success("Manufacturer updated successfully!");
+        fetchManufacturers();
       } catch (error) {
-        toast.error("Error updating buyer!");
+        toast.error("Error updating manufacturer!");
         console.error(error);
       }
     } else {
-      setBuyers((prevBuyers) =>
-        prevBuyers.map((buyer) =>
-          buyer._id === id ? { ...buyer, isEditing: !buyer.isEditing } : buyer
+      setManufacturer((prevManufacturer) =>
+        prevManufacturer.map((man) =>
+          man._id === id ? { ...man, isEditing: !man.isEditing } : man
         )
       );
     }
@@ -92,39 +90,37 @@ const BuyerForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await createBuyer({
-        buyer: form.buyer,
-        buyerCompany: form.buyerCompany,
-        buyerdeliveryAddress: {
+      const response = await createManufacturer({
+        manufacturer: form.manufacturer,
+        manufacturerCompany: form.manufacturerCompany,
+        manufacturerdeliveryAddress: {
           addressLine1: form.addressLine1,
           addressLine2: form.addressLine2,
           city: form.city,
           state: form.state,
           pinCode: form.pinCode,
         },
-        buyerContact: form.buyerContact,
-        buyerEmail: form.buyerEmail,
-        buyerGstno: form.buyerGstno,
-        buyerGooglemaps: form.buyerGooglemaps,
+        manufacturerContact: form.manufacturerContact,
+        manufacturerEmail: form.manufacturerEmail,
+        manufacturerGstno: form.manufacturerGstno,
       });
       console.log(response);
-      toast.success("Buyer added successfully!");
+      toast.success("Manufacturer added successfully!");
       setForm({
-        buyer: "",
-        buyerCompany: "",
+        manufacturer: "",
+        manufacturerCompany: "",
         addressLine1: "",
         addressLine2: "",
         city: "",
         state: "",
         pinCode: "",
-        buyerContact: "",
-        buyerEmail: "",
-        buyerGstno: "",
-        buyerGooglemaps: "",
+        manufacturerContact: "",
+        manufacturerEmail: "",
+        manufacturerGstno: "",
       });
-      fetchBuyers();
+      fetchManufacturers();
     } catch (error) {
-      toast.error("Error adding buyer!");
+      toast.error("Error adding manufacturer!");
       console.error(error);
     } finally {
       setLoading(false);
@@ -157,25 +153,25 @@ const BuyerForm = () => {
       name = fieldName;
       value = e;
     }
-    setBuyers((prevBuyers) =>
-      prevBuyers.map((buyer) =>
-        buyer._id === id
+    setManufacturer((prevManufacturers) =>
+      prevManufacturers.map((man) =>
+        man._id === id
           ? {
-              ...buyer,
+              ...man,
               [name]: value,
             }
-          : buyer
+          : man
       )
     );
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteBuyer(id);
-      toast.error("Buyer deleted successfully!");
-      fetchBuyers();
+      await deleteManufacturer(id);
+      toast.error("Manufacturer deleted successfully!");
+      fetchManufacturers();
     } catch (error) {
-      toast.error("Error deleting buyer!");
+      toast.error("Error deleting manufacturer!");
       console.error(error);
     }
   };
@@ -185,18 +181,18 @@ const BuyerForm = () => {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-6 gap-2">
           <Input
-            name="buyer"
-            label="Buyer Name"
+            name="manufacturer"
+            label="Manufacturer Name"
             type="text"
-            value={form.buyer}
+            value={form.manufacturer}
             onChange={handleChange}
             required
           />
           <Input
-            name="buyerCompany"
+            name="manufacturerCompany"
             label="Company Name"
             type="text"
-            value={form.buyerCompany}
+            value={form.manufacturerCompany}
             onChange={handleChange}
             required
           />
@@ -240,48 +236,43 @@ const BuyerForm = () => {
             required
           />
           <Input
-            name="buyerContact"
+            name="manufacturerContact"
             label="Contact Number"
             type="text"
-            value={form.buyerContact}
+            value={form.manufacturerContact}
             onChange={handleChange}
             required
           />
           <Input
-            name="buyerEmail"
+            name="manufacturerEmail"
             label="Email"
             type="email"
-            value={form.buyerEmail}
+            value={form.manufacturerEmail}
             onChange={handleChange}
             required
           />
           <Input
-            name="buyerGstno"
+            name="manufacturerGstno"
             label="GST Number"
             type="text"
-            value={form.buyerGstno}
-            onChange={handleChange}
-          />
-          <Input
-            name="buyerGooglemaps"
-            label="Google Maps Link"
-            type="text"
-            value={form.buyerGooglemaps}
+            value={form.manufacturerGstno}
             onChange={handleChange}
           />
           <Button color="blue" type="submit">
-            {loading ? <Spinner /> : <span>Add Buyer</span>}
+            {loading ? <Spinner /> : <span>Add Manufacturer</span>}
           </Button>
         </div>
       </form>
 
-      {/* Buyers Table */}
+      {/* Manufacturers Table */}
       <div className="mt-8">
-        {buyers?.length > 0 ? (
+        {manufacturer?.length > 0 ? (
           <table className="min-w-full bg-white">
             <thead>
               <tr className="grid grid-cols-7">
-                <th className="py-2 px-4 border-b text-start">Buyer Name</th>
+                <th className="py-2 px-4 border-b text-start">
+                  Manufacturer Name
+                </th>
                 <th className="py-2 px-4 border-b text-start">Company</th>
                 <th className="py-2 px-4 border-b text-start">Address</th>
                 <th className="py-2 px-4 border-b text-start">Contact</th>
@@ -291,151 +282,151 @@ const BuyerForm = () => {
               </tr>
             </thead>
             <tbody>
-              {buyers?.map((buyer) => (
-                <tr key={buyer._id} className="grid grid-cols-7">
+              {manufacturer?.map((man) => (
+                <tr key={man._id} className="grid grid-cols-7">
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <input
-                        name="buyer"
+                        name="manufacturer"
                         type="text"
-                        placeholder="Buyer Name"
-                        value={buyer.buyer}
+                        placeholder="Manufacturer Name"
+                        value={man.manufacturer}
                         className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                        onChange={(e) => handleItemChange(e, buyer._id)}
+                        onChange={(e) => handleItemChange(e, man._id)}
                       />
                     ) : (
-                      <span>{buyer.buyer}</span>
+                      <span>{man.manufacturer}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <input
-                        name="buyerCompany"
+                        name="manufacturerCompany"
                         type="text"
-                        placeholder="Buyer Company"
-                        value={buyer.buyerCompany}
+                        placeholder="Manufacturer Company"
+                        value={man.manufacturerCompany}
                         className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                        onChange={(e) => handleItemChange(e, buyer._id)}
+                        onChange={(e) => handleItemChange(e, man._id)}
                       />
                     ) : (
-                      <span>{buyer.buyerCompany}</span>
+                      <span>{man.manufacturerCompany}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <div className="flex flex-col gap-1">
                         <input
                           name="addressLine1"
                           type="text"
                           placeholder="Address Line 1"
-                          value={buyer.buyerdeliveryAddress?.addressLine1}
+                          value={man.manufacturerdeliveryAddress?.addressLine1}
                           className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                          onChange={(e) => handleItemChange(e, buyer._id)}
+                          onChange={(e) => handleItemChange(e, man._id)}
                         />
                         <input
                           name="addressLine2"
                           type="text"
                           placeholder="Address Line 2"
-                          value={buyer.buyerdeliveryAddress?.addressLine2}
+                          value={man.manufacturerdeliveryAddress?.addressLine2}
                           className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                          onChange={(e) => handleItemChange(e, buyer._id)}
+                          onChange={(e) => handleItemChange(e, man._id)}
                         />
                         <input
                           name="city"
                           type="text"
                           placeholder="City"
-                          value={buyer.buyerdeliveryAddress?.city}
+                          value={man.manufacturerdeliveryAddress?.city}
                           className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                          onChange={(e) => handleItemChange(e, buyer._id)}
+                          onChange={(e) => handleItemChange(e, man._id)}
                         />
                         <input
                           name="state"
                           type="text"
                           placeholder="State"
-                          value={buyer.buyerdeliveryAddress?.state}
+                          value={man.manufacturerdeliveryAddress?.state}
                           className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                          onChange={(e) => handleItemChange(e, buyer._id)}
+                          onChange={(e) => handleItemChange(e, man._id)}
                         />
                         <input
                           name="pinCode"
                           type="text"
                           placeholder="Pincode"
-                          value={buyer.buyerdeliveryAddress?.pinCode}
+                          value={man.manufacturerdeliveryAddress?.pinCode}
                           className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                          onChange={(e) => handleItemChange(e, buyer._id)}
+                          onChange={(e) => handleItemChange(e, man._id)}
                         />
                       </div>
                     ) : (
                       <span>
-                        {buyer.buyerdeliveryAddress?.addressLine1}{" "}
-                        {buyer.buyerdeliveryAddress?.addressLine2}{" "}
-                        {buyer.buyerdeliveryAddress?.city}{" "}
-                        {buyer.buyerdeliveryAddress?.state}{" "}
-                        {buyer.buyerdeliveryAddress?.pinCode}
+                        {man.manufacturerdeliveryAddress?.addressLine1}{" "}
+                        {man.manufacturerdeliveryAddress?.addressLine2}{" "}
+                        {man.manufacturerdeliveryAddress?.city}{" "}
+                        {man.manufacturerdeliveryAddress?.state}{" "}
+                        {man.manufacturerdeliveryAddress?.pinCode}
                       </span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <input
-                        name="buyerContact"
+                        name="manufacturerContact"
                         type="text"
-                        placeholder="Buyer Contact'"
-                        value={buyer.buyerContact}
+                        placeholder="Manufacturer Contact'"
+                        value={man.manufacturerContact}
                         className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                        onChange={(e) => handleItemChange(e, buyer._id)}
+                        onChange={(e) => handleItemChange(e, man._id)}
                       />
                     ) : (
-                      <span>{buyer.buyerContact}</span>
+                      <span>{man.manufacturerContact}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <input
-                        name="buyerEmail"
+                        name="manufacturerEmail"
                         type="email"
-                        placeholder="Buyer Email"
-                        value={buyer.buyerEmail}
+                        placeholder="Manufacturer Email"
+                        value={man.manufacturerEmail}
                         className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                        onChange={(e) => handleItemChange(e, buyer._id)}
+                        onChange={(e) => handleItemChange(e, man._id)}
                       />
                     ) : (
-                      <span>{buyer.buyerEmail}</span>
+                      <span>{man.manufacturerEmail}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <input
-                        name="buyerGstno"
+                        name="manufacturerGstno"
                         type="text"
-                        placeholder="Buyer GST No."
-                        value={buyer.buyerGstno}
+                        placeholder="Manufacturer GST No."
+                        value={man.manufacturerGstno}
                         className="border border-gray-400 px-2 py-1 rounded-[4px] w-[170px]"
-                        onChange={(e) => handleItemChange(e, buyer._id)}
+                        onChange={(e) => handleItemChange(e, man._id)}
                       />
                     ) : (
-                      <span>{buyer.buyerGstno}</span>
+                      <span>{man.manufacturerGstno}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 border-b flex gap-2">
-                    {buyer.isEditing ? (
+                    {man.isEditing ? (
                       <IconButton
                         color="green"
-                        onClick={() => toggleEditing(buyer._id)}
+                        onClick={() => toggleEditing(man._id)}
                       >
                         Save
                       </IconButton>
                     ) : (
                       <IconButton
                         color="blue"
-                        onClick={() => toggleEditing(buyer._id)}
+                        onClick={() => toggleEditing(man._id)}
                       >
                         <FaEdit />
                       </IconButton>
                     )}
                     <IconButton
                       color="red"
-                      onClick={() => handleDelete(buyer._id)}
+                      onClick={() => handleDelete(man._id)}
                     >
                       <FaTrashAlt />
                     </IconButton>
@@ -446,7 +437,7 @@ const BuyerForm = () => {
           </table>
         ) : (
           <Typography className="text-xl text-center font-bold">
-            No Buyers!
+            No Manufacturers!
           </Typography>
         )}
       </div>
@@ -454,4 +445,4 @@ const BuyerForm = () => {
   );
 };
 
-export default BuyerForm;
+export default ManufacturerForm;

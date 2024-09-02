@@ -15,16 +15,32 @@ import {
   getManufacturer,
   getTransport,
 } from "@/services/masterService";
+import { fetchWarehouse, getWarehouses } from "@/services/warehouseService";
+import { createPurchase } from "@/services/purchaseService";
 
 const PurchaseModal = ({ setModal, order }) => {
   const [loading, setLoading] = useState(false);
   const [itemsOptions, setItemsOptions] = useState([]);
   const [transportOptions, setTransportOptions] = useState([]);
   const [manufacturerOptions, setManufacturerOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
+
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
   const [form, setForm] = useState({
-    items: [{ itemId: "", quantity: 0 }],
+    items: order.items.map((item) => ({
+      itemId: item.item,
+      quantity: item.quantity,
+    })),
     transporterId: "",
-    orderId: "",
+    orderId: order._id,
     invoiceNumber: "",
     invoiceDate: "",
     warehouseId: "",
@@ -32,8 +48,9 @@ const PurchaseModal = ({ setModal, order }) => {
 
   useEffect(() => {
     // fetchItemsOptions();
-    // fetchTransportOptions();
+    fetchTransportOptions();
     // fetchManufacturerOptions();
+    fetchWarehouseOptions();
   }, []);
 
   //   const fetchOrders = async () => {
@@ -56,15 +73,15 @@ const PurchaseModal = ({ setModal, order }) => {
   //     }
   //   };
 
-  //   const fetchTransportOptions = async () => {
-  //     try {
-  //       const response = await getTransport();
-  //       setTransportOptions(response);
-  //     } catch (error) {
-  //       toast.error("Error fetching transport options!");
-  //       console.error(error);
-  //     }
-  //   };
+  const fetchTransportOptions = async () => {
+    try {
+      const response = await getTransport();
+      setTransportOptions(response);
+    } catch (error) {
+      toast.error("Error fetching transport options!");
+      console.error(error);
+    }
+  };
 
   //   const fetchManufacturerOptions = async () => {
   //     try {
@@ -76,33 +93,84 @@ const PurchaseModal = ({ setModal, order }) => {
   //     }
   //   };
 
-  const calculateDaysDifference = (date1, date2) => {
-    const diffTime = Math.abs(new Date(date2) - new Date(date1));
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  console.log(order)
+
+  const fetchWarehouseOptions = async () => {
+    try {
+      const response = await getWarehouses();
+      console.log(response);
+      setWarehouseOptions(response);
+    } catch (error) {
+      toast.error("Error fetching warehouses!");
+      console.error(error);
+    }
   };
+
+  console.log(order);
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     //   const paymentDays = calculateDaysDifference(
+  //     //     form.companyBargainDate,
+  //     //     form.paymentDays
+  //     //   );
+  //     //   const updatedForm = { ...form, paymentDays };
+  //     //   console.log(updatedForm);
+
+  //     // const response = await createOrder(form);
+  //     console.log(form);
+  //     toast.success("Order added successfully!");
+  //     // setForm({
+  //     //   items: [{ itemId: "", quantity: 0 }],
+  //     //   transporterId: "",
+  //     //   orderId: "",
+  //     //   invoiceNumber: "",
+  //     //   invoiceDate: "",
+  //     //   warehouseId: "",
+  //     // });
+  //     //   fetchOrders();
+  //   } catch (error) {
+  //     toast.error("Error adding order!");
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      //   const paymentDays = calculateDaysDifference(
-      //     form.companyBargainDate,
-      //     form.paymentDays
-      //   );
-      //   const updatedForm = { ...form, paymentDays };
-      //   console.log(updatedForm);
 
-      const response = await createOrder(form);
+    try {
+      const finalData = {
+        warehouseId: form.warehouseId,
+        transporterId: form.transporterId,
+        orderId: form.orderId,
+        invoiceDate: form.invoiceDate,
+        items: form.items.map((item) => ({
+          itemId: item.itemId,
+          quantity: item.quantity,
+        })),
+      };
+
+      const response = await createPurchase(finalData);
+      console.log(response);
+      console.log(finalData);
       toast.success("Order added successfully!");
-      setForm({
-        items: [{ itemId: "", quantity: 0 }],
-        transporterId: "",
-        orderId: "",
-        invoiceNumber: "",
-        invoiceDate: "",
-        warehouseId: "",
-      });
-    //   fetchOrders();
+
+      // setForm({
+      //   items: order.items.map((item) => ({
+      //     itemId: item.itemId,
+      //     quantity: item.quantity,
+      //   })),
+      //   transporterId: "",
+      //   orderId: order._id,
+      //   invoiceNumber: "",
+      //   invoiceDate: "",
+      //   warehouseId: "",
+      // });
     } catch (error) {
       toast.error("Error adding order!");
       console.error(error);
@@ -114,22 +182,18 @@ const PurchaseModal = ({ setModal, order }) => {
   const handleFormChange = (index, fieldName, value) => {
     if (fieldName === "items") {
       const updatedItems = [...form.items];
+      const maxQuantity = order.items[index].quantity;
+
+      // Ensure the quantity does not exceed the available quantity in the order
+      if (value.quantity > maxQuantity) {
+        toast.error(`Quantity cannot exceed ${maxQuantity}`);
+        return;
+      }
+
       updatedItems[index] = value;
       setForm((prevData) => ({
         ...prevData,
         items: updatedItems,
-      }));
-    } else if (fieldName === "companyBargainDate") {
-      const formattedDate = value.split("T")[0];
-      setForm((prevData) => ({
-        ...prevData,
-        companyBargainDate: formattedDate,
-      }));
-    } else if (fieldName === "paymentDays") {
-      const formattedDate = value.split("T")[0];
-      setForm((prevData) => ({
-        ...prevData,
-        paymentDays: formattedDate,
       }));
     } else {
       setForm((prevData) => ({
@@ -152,73 +216,87 @@ const PurchaseModal = ({ setModal, order }) => {
           className="flex flex-col gap-4 p-5 bg-white shadow-md rounded-xl"
         >
           <div className="flex flex-col gap-4">
-            {order?.items.map((item, index) => (
-              <div key={index} className="grid grid-cols-3 gap-2">
-                {itemsOptions?.length > 0 && (
-                  <Select
+            {order.items.length > 0 &&
+              order?.items.map((item, index) => (
+                <div key={index} className="grid grid-cols-3 gap-2">
+                  <Input
                     name="itemId"
-                    label={`Select Item ${index + 1}`}
-                    value={item.itemId}
-                    onChange={(value) =>
+                    label={`${item.name}`}
+                    value={form.items[index]?._id || ""}
+                    disabled
+                  />
+                  <Input
+                    name="quantity"
+                    label="Quantity"
+                    type="number"
+                    value={form.items[index]?.quantity || ""}
+                    onChange={(e) =>
                       handleFormChange(index, "items", {
-                        ...item,
-                        itemId: value,
+                        ...form.items[index],
+                        quantity: parseInt(e.target.value, 10),
                       })
                     }
                     required
-                  >
-                    {itemsOptions?.map((option) => (
-                      <Option key={option._id} value={option._id}>
-                        {option.name}
-                      </Option>
-                    ))}
-                  </Select>
-                )}
-                <Input
-                  name="quantity"
-                  label="Quantity"
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleFormChange(index, "items", {
-                      ...item,
-                      quantity: e.target.value,
-                    })
-                  }
-                  min={1}
-                  required
-                />
-                {index > 0 && (
-                  <IconButton
-                    color="red"
-                    onClick={() => handleRemoveItem(index)}
-                  >
-                    <FaTrashAlt />
-                  </IconButton>
-                )}
-              </div>
-            ))}
+                  />
+                </div>
+              ))}
 
             <div className="grid grid-cols-4 gap-2">
               <Input
-                name="companyBargainDate"
-                label="Company Bargain Date"
+                name="invoiceDate"
+                label="Invoice Date"
                 type="date"
-                value={form.companyBargainDate}
+                value={form.invoiceDate}
                 onChange={(e) =>
-                  handleFormChange(0, "companyBargainDate", e.target.value)
+                  handleFormChange(0, "invoiceDate", e.target.value)
                 }
-                required
               />
+
+              {warehouseOptions?.length > 0 && (
+                <Select
+                  name="warehouseId"
+                  label="Select Warehouse"
+                  value={form.warehouseId}
+                  onChange={(value) =>
+                    handleFormChange(0, "warehouseId", value)
+                  }
+                  required
+                >
+                  {warehouseOptions?.map((option) => (
+                    <Option key={option._id} value={option._id}>
+                      {option.name}
+                    </Option>
+                  ))}
+                </Select>
+              )}
+
+              {transportOptions?.length > 0 && (
+                <Select
+                  name="transporterId"
+                  label="Select Transporter"
+                  value={form.transporterId}
+                  onChange={(value) =>
+                    handleFormChange(0, "transporterId", value)
+                  }
+                  required
+                >
+                  {transportOptions?.map((option) => (
+                    <Option key={option._id} value={option._id}>
+                      {option.transport}
+                    </Option>
+                  ))}
+                </Select>
+              )}
+
               <Input
                 name="companyBargainNo"
                 label="Company Bargain No."
                 type="text"
-                value={form.companyBargainNo}
+                value={order.companyBargainNo}
                 onChange={(e) =>
                   handleFormChange(0, "companyBargainNo", e.target.value)
                 }
-                required
+                disabled
               />
 
               {manufacturerOptions.length > 0 && (
@@ -242,9 +320,9 @@ const PurchaseModal = ({ setModal, order }) => {
               <Select
                 name="billType"
                 label="Select Bill Type"
-                value={form.billType}
+                value={order.billType}
                 onChange={(value) => handleFormChange(0, "billType", value)}
-                required
+                disabled
               >
                 <Option value="Virtual Billed">Virtual Billed</Option>
                 <Option value="Billed">Billed</Option>
@@ -252,24 +330,6 @@ const PurchaseModal = ({ setModal, order }) => {
             </div>
 
             <div className="grid grid-cols-5 gap-2">
-              {transportOptions?.length > 0 && (
-                <Select
-                  name="transportCatigory"
-                  label="Select Transport"
-                  value={form.transportCatigory}
-                  onChange={(value) =>
-                    handleFormChange(0, "transportCatigory", value)
-                  }
-                  required
-                >
-                  {transportOptions?.map((option) => (
-                    <Option key={option._id} value={option._id}>
-                      {option.transport}
-                    </Option>
-                  ))}
-                </Select>
-              )}
-
               <Select
                 name="transportCatigory"
                 label="Select Transport Category"
@@ -284,27 +344,17 @@ const PurchaseModal = ({ setModal, order }) => {
               </Select>
 
               <Input
-                name="paymentDays"
-                label="Payment Date"
-                type="date"
-                value={form.paymentDays}
-                onChange={(e) =>
-                  handleFormChange(0, "paymentDays", e.target.value)
-                }
-                min={1}
-                required
-              />
-              <Input
                 name="description"
                 label="Description"
                 type="text"
-                value={form.description}
+                value={order.description}
                 onChange={(e) =>
                   handleFormChange(0, "description", e.target.value)
                 }
+                disabled
               />
               <Button color="blue" type="submit">
-                {loading ? <Spinner /> : <span>Add Order</span>}
+                {loading ? <Spinner /> : <span>Create Purchase</span>}
               </Button>
             </div>
           </div>

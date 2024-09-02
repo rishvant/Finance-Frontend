@@ -93,10 +93,15 @@ const CreateOrderForm = () => {
         form.companyBargainDate,
         form.paymentDays
       );
-      const updatedForm = { ...form, paymentDays };
+      const updatedForm = {
+        ...form,
+        paymentDays,
+        warehouse: "66d5ef56ffe7ebdae2fc0dc5",
+        organization: "64d22f5a8b3b9f47a3b0e7f1",
+      };
       console.log(updatedForm);
 
-      const response = await createOrder(form);
+      const response = await createOrder(updatedForm);
       toast.success("Order added successfully!");
       setForm({
         items: [{ itemId: "", quantity: 1 }],
@@ -107,6 +112,8 @@ const CreateOrderForm = () => {
         paymentDays: null,
         description: "",
         billType: "",
+        warehouse: "",
+        organization: "",
       });
       fetchOrders();
     } catch (error) {
@@ -247,9 +254,7 @@ const CreateOrderForm = () => {
                 name="manufacturer"
                 label="Select Manufacturer"
                 value={form.manufacturer}
-                onChange={(value) =>
-                  handleFormChange(0, "manufacturer", value)
-                }
+                onChange={(value) => handleFormChange(0, "manufacturer", value)}
                 required
               >
                 {manufacturerOptions.map((option) => (
@@ -273,24 +278,6 @@ const CreateOrderForm = () => {
           </div>
 
           <div className="grid grid-cols-5 gap-2">
-            {transportOptions?.length > 0 && (
-              <Select
-                name="transportCatigory"
-                label="Select Transport"
-                value={form.transportCatigory}
-                onChange={(value) =>
-                  handleFormChange(0, "transportCatigory", value)
-                }
-                required
-              >
-                {transportOptions?.map((option) => (
-                  <Option key={option._id} value={option._id}>
-                    {option.transport}
-                  </Option>
-                ))}
-              </Select>
-            )}
-
             <Select
               name="transportCatigory"
               label="Select Transport Category"

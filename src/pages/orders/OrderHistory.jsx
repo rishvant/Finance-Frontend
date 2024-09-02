@@ -99,7 +99,7 @@ export function OrderTable() {
 
     fetchOrders();
   }, [statusFilter, timePeriod, dateRange]);
-  
+
   const formatDate = (date) => {
     const d = new Date(date);
     if (isNaN(d.getTime())) {

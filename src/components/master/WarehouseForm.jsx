@@ -35,6 +35,7 @@ const WarehouseForm = () => {
   const fetchWarehouses = async () => {
     try {
       const response = await getWarehouses();
+      console.log(response)
       const warehousesWithEditingState = response.map((warehouse) => ({
         ...warehouse,
         isEditing: false,

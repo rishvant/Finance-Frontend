@@ -96,6 +96,7 @@ export function Purchase() {
 
     fetchOrders();
   }, [statusFilter, timePeriod, dateRange]);
+
   const formatDate = (date) => {
     const d = new Date(date);
     if (isNaN(d.getTime())) {
@@ -400,7 +401,9 @@ export function Purchase() {
           </CardBody>
         </Card>
       </div>
-      {purchaseModal && <PurchaseModal setModal={setPurchaseModal} order={selectedOrder} />}
+      {purchaseModal && (
+        <PurchaseModal setModal={setPurchaseModal} order={selectedOrder} />
+      )}
     </>
   );
 }

@@ -93,7 +93,7 @@ const PurchaseModal = ({ setModal, order }) => {
   //     }
   //   };
 
-  console.log(order)
+  console.log(order);
 
   const fetchWarehouseOptions = async () => {
     try {
@@ -210,7 +210,7 @@ const PurchaseModal = ({ setModal, order }) => {
       aria-hidden="true"
       className="fixed inset-0 z-50 flex items-center justify-center w-full h-full overflow-y-auto overflow-x-hidden bg-gray-900 bg-opacity-50"
     >
-      <div className="relative p-4 w-fit h-fit">
+      <div className="relative p-4 w-fit max-w-[700px] h-fit">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 p-5 bg-white shadow-md rounded-xl"
@@ -241,7 +241,7 @@ const PurchaseModal = ({ setModal, order }) => {
                 </div>
               ))}
 
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Input
                 name="invoiceDate"
                 label="Invoice Date"
@@ -329,7 +329,7 @@ const PurchaseModal = ({ setModal, order }) => {
               </Select>
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Select
                 name="transportCatigory"
                 label="Select Transport Category"
@@ -353,8 +353,13 @@ const PurchaseModal = ({ setModal, order }) => {
                 }
                 disabled
               />
+            </div>
+            <div className="flex flex-row gap-2 mt-5">
               <Button color="blue" type="submit">
                 {loading ? <Spinner /> : <span>Create Purchase</span>}
+              </Button>
+              <Button color="red" onClick={() => setModal(false)}>
+                <span>Cancel</span>
               </Button>
             </div>
           </div>

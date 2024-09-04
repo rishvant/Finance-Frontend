@@ -40,9 +40,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
     <aside
       className={`${sidenavTypes[sidenavType]} ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
-      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] ${
+      } fixed inset-0 my-4 ml-4 h-[calc(100vh-32px)] ${
         openSidenav ? "w-72" : "w-20"
-      } rounded-xl transition-transform duration-1000 sm:translate-x-0 border border-blue-gray-100`}
+      } rounded-xl transition-transform duration-1000 sm:translate-x-0 border border-blue-gray-100 z-[101]`}
     >
       <div className="relative">
         <Link to="/" className="py-6 px-8 text-center">

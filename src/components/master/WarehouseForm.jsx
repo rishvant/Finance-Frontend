@@ -35,7 +35,7 @@ const WarehouseForm = () => {
   const fetchWarehouses = async () => {
     try {
       const response = await getWarehouses();
-      console.log(response)
+      console.log(response);
       const warehousesWithEditingState = response.map((warehouse) => ({
         ...warehouse,
         isEditing: false,
@@ -59,7 +59,9 @@ const WarehouseForm = () => {
           city: warehouseToEdit.location.city,
           warehouseManager: warehouseToEdit.warehouseManager,
         };
-        await updateWarehouse(data, id);
+        console.log(data);
+        const response = await updateWarehouse(data, id);
+        console.log(response);
         toast.success("Warehouse updated successfully!");
         fetchWarehouses();
       } catch (error) {
@@ -132,12 +134,17 @@ const WarehouseForm = () => {
       name = fieldName;
       value = e;
     }
+
     setWarehouses((prevWarehouses) =>
       prevWarehouses.map((warehouse) =>
         warehouse._id === id
           ? {
               ...warehouse,
-              [name]: value,
+              location: {
+                ...warehouse.location,
+                [name]: value,
+              },
+              [name]: name === "state" || name === "city" ? undefined : value,
             }
           : warehouse
       )

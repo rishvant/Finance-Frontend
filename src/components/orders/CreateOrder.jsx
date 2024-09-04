@@ -15,6 +15,7 @@ import {
   getManufacturer,
   getTransport,
 } from "@/services/masterService";
+import { getWarehouses } from "@/services/warehouseService";
 
 const CreateOrderForm = () => {
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ const CreateOrderForm = () => {
   const [itemsOptions, setItemsOptions] = useState([]);
   const [transportOptions, setTransportOptions] = useState([]);
   const [manufacturerOptions, setManufacturerOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
   const [form, setForm] = useState({
     items: [{ itemId: "", quantity: 0 }],
     transportCatigory: "",
@@ -31,6 +33,7 @@ const CreateOrderForm = () => {
     paymentDays: null,
     description: "",
     billType: "",
+    warehouse: "",
   });
 
   useEffect(() => {
@@ -38,6 +41,7 @@ const CreateOrderForm = () => {
     fetchItemsOptions();
     fetchTransportOptions();
     fetchManufacturerOptions();
+    fetchWarehouseOptions();
   }, []);
 
   const fetchOrders = async () => {
@@ -80,6 +84,16 @@ const CreateOrderForm = () => {
     }
   };
 
+  const fetchWarehouseOptions = async () => {
+    try {
+      const response = await getWarehouses();
+      setWarehouseOptions(response);
+    } catch (error) {
+      toast.error("Error fetching warehouses!");
+      console.error(error);
+    }
+  };
+
   const calculateDaysDifference = (date1, date2) => {
     const diffTime = Math.abs(new Date(date2) - new Date(date1));
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -96,7 +110,7 @@ const CreateOrderForm = () => {
       const updatedForm = {
         ...form,
         paymentDays,
-        warehouse: "66d5ef56ffe7ebdae2fc0dc5",
+        warehouse: "",
         organization: "64d22f5a8b3b9f47a3b0e7f1",
       };
       console.log(updatedForm);
@@ -248,6 +262,22 @@ const CreateOrderForm = () => {
               }
               required
             />
+
+            {warehouseOptions.length > 0 && (
+              <Select
+                name="manufacturer"
+                label="Select Warehouse"
+                value={form.warehouse}
+                onChange={(value) => handleFormChange(0, "warehouse", value)}
+                required
+              >
+                {warehouseOptions.map((option) => (
+                  <Option key={option._id} value={option._id}>
+                    {option.name}
+                  </Option>
+                ))}
+              </Select>
+            )}
 
             {manufacturerOptions.length > 0 && (
               <Select

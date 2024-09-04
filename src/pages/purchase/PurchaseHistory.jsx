@@ -6,6 +6,7 @@ import {
   CardBody,
   CardHeader,
   IconButton,
+  Input,
   Typography,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
@@ -14,69 +15,16 @@ import { Link } from "react-router-dom";
 
 const PurchaseHistory = () => {
   const [purchases, setPurchases] = useState([]);
-  const [purchaseLoading, setPurchaseLoading] = useState(true);
-  const [purchaseError, setPurchaseError] = useState(null);
   const [openOrder, setOpenOrder] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [timePeriod, setTimePeriod] = useState("All");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null,
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
         const response = await getPurchases();
         const purchaseData = response.data;
-
-        // // Filter purchases based on status
-        // let filteredPurchases =
-        //   statusFilter === "All"
-        //     ? purchaseData
-        //     : purchaseData.filter(
-        //         (purchase) => purchase.status === statusFilter
-        //       );
-
-        // // Filter purchases based on time period
-        // const now = new Date();
-        // let filterDate;
-
-        // if (timePeriod === "last7Days") {
-        //   filterDate = new Date();
-        //   filterDate.setDate(now.getDate() - 7);
-        //   filteredPurchases = filteredPurchases.filter(
-        //     (purchase) => new Date(purchase.companyBargainDate) >= filterDate
-        //   );
-        // } else if (timePeriod === "last30Days") {
-        //   filterDate = new Date();
-        //   filterDate.setDate(now.getDate() - 30);
-        //   filteredPurchases = filteredPurchases.filter(
-        //     (purchase) => new Date(purchase.companyBargainDate) >= filterDate
-        //   );
-        // } else if (
-        //   timePeriod === "custom" &&
-        //   dateRange.startDate &&
-        //   dateRange.endDate
-        // ) {
-        //   const start = new Date(dateRange.startDate);
-        //   const end = new Date(dateRange.endDate);
-        //   filteredPurchases = filteredPurchases.filter((purchase) => {
-        //     const purchaseDate = new Date(purchase.companyBargainDate);
-        //     return purchaseDate >= start && purchaseDate <= end;
-        //   });
-        // }
-
-        // // Sort purchases by companyBargainDate in descending purchase
-        // filteredPurchases.sort(
-        //   (a, b) =>
-        //     new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
-        // );
-
-        // console.log(filteredPurchases);
-
         setPurchases(purchaseData);
       } catch (error) {
         setError("Failed to fetch purchases");
@@ -86,7 +34,7 @@ const PurchaseHistory = () => {
     };
 
     fetchPurchases();
-  }, [statusFilter, timePeriod, dateRange]);
+  }, []);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -103,46 +51,10 @@ const PurchaseHistory = () => {
     setOpenOrder(openOrder === orderId ? null : orderId);
   };
 
-  const handleDownloadExcel = () => {
-    const formattedpurchases = purchases.map((purchase) => ({
-      "Company Bargain No": purchase.companyBargainNo,
-      "Company Bargain Date": formatDate(purchase.companyBargainDate),
-      "Seller Name": purchase.sellerName,
-      "Seller Location": purchase.sellerLocation,
-      "Seller Contact": purchase.sellerContact,
-      Status: purchase.status,
-      "Transport Type": purchase.transportType,
-      "Transport Location": purchase.transportLocation,
-      "Bill Type": purchase.billType,
-      Description: purchase.description,
-      "Created At": formatDate(purchase.createdAt),
-      "Updated At": formatDate(purchase.updatedAt),
-      "Payment Days": purchase.paymentDays,
-      "Reminder Days": purchase.reminderDays.join(", "),
-    }));
-
-    const formattedPurchases = purchases.map((purchase) => ({
-      "Invoice Number": purchase.invoiceNumber,
-      "Invoice Date": formatDate(purchase.invoiceDate),
-      "Warehouse ID": purchase.warehouseId,
-      "Transporter ID": purchase.transporterId,
-      "purchase ID": purchase.purchaseId,
-      Items: purchase.items
-        .map((item) => `${item.name} - ${item.quantity}`)
-        .join(", "),
-    }));
-
-    const worksheetpurchases = XLSX.utils.json_to_sheet(formattedpurchases);
-    const worksheetPurchases = XLSX.utils.json_to_sheet(formattedPurchases);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheetpurchases, "purchases");
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheetPurchases,
-      "Purchase History"
-    );
-    XLSX.writeFile(workbook, "purchases_and_purchases.xlsx");
-  };
+  // Filter purchases by search query
+  const filteredPurchases = purchases.filter((purchase) =>
+    purchase.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Card className="mt-12">
@@ -162,13 +74,25 @@ const PurchaseHistory = () => {
         <Typography variant="h5" className="sm:ml-8 mb-4 mt-5">
           Purchase History
         </Typography>
+
+        {/* Search Input */}
+        <div className="flex flex-row justify-center px-8 mb-4 w-fit">
+          <Input
+            type="text"
+            label="Search by Invoice Number"
+            className="border border-gray-300 p-2 rounded"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         {loading ? (
           <Typography className="text-center text-blue-gray-600">
             Loading...
           </Typography>
         ) : error ? (
           <Typography className="text-center text-red-600">{error}</Typography>
-        ) : purchases.length > 0 ? (
+        ) : filteredPurchases.length > 0 ? (
           <table className="w-full min-w-[640px] table-auto">
             <thead>
               <tr>
@@ -195,7 +119,7 @@ const PurchaseHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {purchases.map((purchase) => {
+              {filteredPurchases.map((purchase) => {
                 const className = `py-3 px-3 border-b border-blue-gray-50 text-center`;
                 const isOpen = openOrder === purchase._id;
 

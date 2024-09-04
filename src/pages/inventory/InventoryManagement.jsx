@@ -10,8 +10,14 @@ import {
   Tabs,
   TabsHeader,
   Tab,
+  Select,
+  Option,
 } from "@material-tailwind/react";
-import { getWarehouseById, updateInventory } from "@/services/warehouseService";
+import {
+  getWarehouseById,
+  getWarehouses,
+  updateInventory,
+} from "@/services/warehouseService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -20,21 +26,32 @@ export function InventoryManagement() {
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("virtual");
   const [transferQuantities, setTransferQuantities] = useState({});
+  const [warehouses, setWarehouses] = useState([]);
+  const [selectedWarehouse, setSelectedWarehouse] = useState("");
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
-    const storedWarehouseID = localStorage.getItem("warehouse");
+    fetchWarehouses();
+    const storedWarehouseID = selectedWarehouse;
+    const response = getWarehouseById(selectedWarehouse);
     if (storedWarehouseID) {
       getWarehouseById(storedWarehouseID).then((warehouse) => {
         setCurrentWarehouse(warehouse);
         setLoading(false);
       });
-    } else {
-      setLoading(false);
-      navigate("/");
     }
-  }, [navigate]);
+  }, [selectedWarehouse]);
+
+  const fetchWarehouses = async () => {
+    try {
+      const response = await getWarehouses();
+      console.log(response);
+      setWarehouses(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleTransferChange = (index, value) => {
     setTransferQuantities({
@@ -59,7 +76,8 @@ export function InventoryManagement() {
         );
 
         if (billedItemIndex !== -1) {
-          currentWarehouse.billedInventory[billedItemIndex].quantity += transferQty;
+          currentWarehouse.billedInventory[billedItemIndex].quantity +=
+            transferQty;
         } else {
           currentWarehouse.billedInventory.push({
             itemName: item.itemName,
@@ -124,12 +142,6 @@ export function InventoryManagement() {
                   <th className="px-4 py-2 border">Item Name</th>
                   <th className="px-4 py-2 border">Weight (kg)</th>
                   <th className="px-4 py-2 border">Quantity</th>
-                  {inventoryType === "virtual" && (
-                    <>
-                      <th className="px-4 py-2 border">Transfer Quantity</th>
-                      <th className="px-4 py-2 border">Action</th>
-                    </>
-                  )}
                 </tr>
               </thead>
               <tbody>
@@ -138,31 +150,6 @@ export function InventoryManagement() {
                     <td className="px-4 py-2 border">{item.itemName}</td>
                     <td className="px-4 py-2 border">{item.weight}</td>
                     <td className="px-4 py-2 border">{item.quantity}</td>
-                    {inventoryType === "virtual" && (
-                      <>
-                        <td className="px-4 py-2 border w-[80px]">
-                          {item.quantity > 0 && (
-                          <Input
-                            type="number"
-                            color="blue"
-                            value={transferQuantities[index] || ""}
-                            onChange={(e) =>
-                              handleTransferChange(index, e.target.value)
-                            }
-                            min="0"
-                          />
-                          )}
-                        </td>
-                        <td className="px-4 py-2 border flex flex-row justify-center">
-                          <Button
-                            color="green"
-                            onClick={() => handleTransfer(index)}
-                          >
-                            Transfer
-                          </Button>
-                        </td>
-                      </>
-                    )}
                   </tr>
                 ))}
               </tbody>
@@ -187,34 +174,55 @@ export function InventoryManagement() {
         <Typography variant="h6" color="white">
           Inventory Management
         </Typography>
-                    <div className="w-72">
-              <Tabs value="app">
-                <TabsHeader>
-              <Tab value="app"
-                            onClick={() => setSelectedTab("virtual")}
-                  >
-                    Virtual
-                  </Tab>
-              <Tab value="message"
-            onClick={() => setSelectedTab("billed")}
-              >
-                    Billed
-                  </Tab>
-                </TabsHeader>
-              </Tabs>
-            </div>
+        <div className="w-72">
+          <Tabs value="app">
+            <TabsHeader>
+              <Tab value="app" onClick={() => setSelectedTab("virtual")}>
+                Virtual
+              </Tab>
+              <Tab value="message" onClick={() => setSelectedTab("billed")}>
+                Billed
+              </Tab>
+            </TabsHeader>
+          </Tabs>
+        </div>
       </CardHeader>
-      <CardBody>
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <Spinner color="blue" size="lg" /> {/* Spinner while loading */}
-          </div>
-        ) : currentWarehouse ? (
-          selectedTab === "virtual"
-            ? renderInventoryTable("virtual")
-            : renderInventoryTable("billed")
+      <CardBody className="h-[50vh]">
+        <div>
+          {warehouses?.length > 0 && (
+            <Select
+              name="warehouse"
+              label="Warehouse"
+              value={selectedWarehouse}
+              onChange={(value) => setSelectedWarehouse(value)}
+            >
+              {warehouses?.map((warehouse) => (
+                <Option value={warehouse._id}>{warehouse.name}</Option>
+              ))}
+            </Select>
+          )}
+        </div>
+
+        {currentWarehouse !== null ? (
+          loading ? (
+            <div className="flex justify-center items-center">
+              <Spinner color="blue" size="lg" />
+            </div>
+          ) : currentWarehouse !== "" ? (
+            selectedTab === "virtual" ? (
+              renderInventoryTable("virtual")
+            ) : (
+              renderInventoryTable("billed")
+            )
+          ) : (
+            <Typography variant="body2" className="mt-5 text-center">
+              No warehouse selected.
+            </Typography>
+          )
         ) : (
-          <Typography variant="body2">No warehouse selected.</Typography>
+          <Typography variant="body2" className="mt-5 text-center">
+            No warehouse selected.
+          </Typography>
         )}
       </CardBody>
     </Card>

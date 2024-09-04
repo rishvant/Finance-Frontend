@@ -7,6 +7,7 @@ import {
   Button,
   Chip,
   IconButton,
+  Input,
 } from "@material-tailwind/react";
 import { getOrders } from "@/services/orderService";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
@@ -32,6 +33,7 @@ export function Purchase() {
     endDate: null,
   });
   const [purchaseModal, setPurchaseModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleCreateOrderClick = () => {
     setShowCreateOrderForm(true);
@@ -78,13 +80,19 @@ export function Purchase() {
           });
         }
 
+        if (searchQuery) {
+          filteredOrders = filteredOrders.filter((order) =>
+            order.companyBargainNo
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          );
+        }
+
         // Sort orders by companyBargainDate in descending order
         filteredOrders.sort(
           (a, b) =>
             new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
         );
-
-        console.log(filteredOrders);
 
         setOrders(filteredOrders);
       } catch (error) {
@@ -95,7 +103,7 @@ export function Purchase() {
     };
 
     fetchOrders();
-  }, [statusFilter, timePeriod, dateRange]);
+  }, [statusFilter, timePeriod, dateRange, searchQuery]);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -135,8 +143,6 @@ export function Purchase() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
     XLSX.writeFile(workbook, "orders.xlsx");
   };
-
-  console.log(selectedOrder);
 
   return (
     <>
@@ -192,6 +198,13 @@ export function Purchase() {
                     className="w-full max-w-sm"
                   />
                 )}
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  label="Search by Bargain No"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border rounded px-2 py-2"
+                />
               </div>
               <Button
                 onClick={handleDownloadExcel}

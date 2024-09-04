@@ -28,6 +28,15 @@ export const updateOrder = async (data, id) => {
     }
 };
 
+export const deleteOrder = async (id) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/order/${id}`);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const updateBillTypePartWise = async (orderId, updateData) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/order/${orderId}/bill-type`, updateData);

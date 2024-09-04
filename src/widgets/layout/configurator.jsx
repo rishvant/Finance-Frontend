@@ -65,7 +65,7 @@ export function Configurator() {
 
   return (
     <aside
-      className={`fixed top-0 right-0 z-50 h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 ${
+      className={`fixed top-0 right-0 z-[101] h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 ${
         openConfigurator ? "translate-x-0" : "translate-x-96"
       }`}
     >

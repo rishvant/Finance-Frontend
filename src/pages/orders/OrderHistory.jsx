@@ -7,8 +7,13 @@ import {
   Button,
   Chip,
   IconButton,
+  Input,
 } from "@material-tailwind/react";
-import { getOrders, updateBillTypePartWise } from "@/services/orderService";
+import {
+  deleteOrder,
+  getOrders,
+  updateBillTypePartWise,
+} from "@/services/orderService";
 import { EditOrderForm } from "@/components/orders/EditOrder";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { toast } from "react-toastify";
@@ -16,6 +21,7 @@ import Datepicker from "react-tailwindcss-datepicker";
 import * as XLSX from "xlsx";
 import excel from "../../assets/excel.png";
 import CreateOrderForm from "@/components/orders/CreateOrder";
+import { MdDeleteOutline } from "react-icons/md";
 
 export function OrderTable() {
   const [showCreateOrderForm, setShowCreateOrderForm] = useState(false);
@@ -35,70 +41,77 @@ export function OrderTable() {
     startDate: null,
     endDate: null,
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleCreateOrderClick = () => {
     setShowCreateOrderForm(true);
   };
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await getOrders();
-        const ordersData = response;
+  const fetchOrders = async () => {
+    try {
+      const response = await getOrders();
+      const ordersData = response;
 
-        // Filter orders based on status
-        let filteredOrders =
-          statusFilter === "All"
-            ? ordersData
-            : ordersData.filter((order) => order.status === statusFilter);
+      // Filter orders based on status
+      let filteredOrders =
+        statusFilter === "All"
+          ? ordersData
+          : ordersData.filter((order) => order.status === statusFilter);
 
-        // Filter orders based on time period
-        const now = new Date();
-        let filterDate;
+      // Filter orders based on time period
+      const now = new Date();
+      let filterDate;
 
-        if (timePeriod === "last7Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 7);
-          filteredOrders = filteredOrders.filter(
-            (order) => new Date(order.companyBargainDate) >= filterDate
-          );
-        } else if (timePeriod === "last30Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 30);
-          filteredOrders = filteredOrders.filter(
-            (order) => new Date(order.companyBargainDate) >= filterDate
-          );
-        } else if (
-          timePeriod === "custom" &&
-          dateRange.startDate &&
-          dateRange.endDate
-        ) {
-          const start = new Date(dateRange.startDate);
-          const end = new Date(dateRange.endDate);
-          filteredOrders = filteredOrders.filter((order) => {
-            const orderDate = new Date(order.companyBargainDate);
-            return orderDate >= start && orderDate <= end;
-          });
-        }
-
-        // Sort orders by companyBargainDate in descending order
-        filteredOrders.sort(
-          (a, b) =>
-            new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      if (timePeriod === "last7Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 7);
+        filteredOrders = filteredOrders.filter(
+          (order) => new Date(order.companyBargainDate) >= filterDate
         );
-
-        console.log(filteredOrders);
-
-        setOrders(filteredOrders);
-      } catch (error) {
-        setError("Failed to fetch orders");
-      } finally {
-        setLoading(false);
+      } else if (timePeriod === "last30Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 30);
+        filteredOrders = filteredOrders.filter(
+          (order) => new Date(order.companyBargainDate) >= filterDate
+        );
+      } else if (
+        timePeriod === "custom" &&
+        dateRange.startDate &&
+        dateRange.endDate
+      ) {
+        const start = new Date(dateRange.startDate);
+        const end = new Date(dateRange.endDate);
+        filteredOrders = filteredOrders.filter((order) => {
+          const orderDate = new Date(order.companyBargainDate);
+          return orderDate >= start && orderDate <= end;
+        });
       }
-    };
 
+      if (searchQuery) {
+        filteredOrders = filteredOrders.filter((order) =>
+          order.companyBargainNo
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // Sort orders by companyBargainDate in descending order
+      filteredOrders.sort(
+        (a, b) =>
+          new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      );
+
+      setOrders(filteredOrders);
+    } catch (error) {
+      setError("Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
-  }, [statusFilter, timePeriod, dateRange]);
+  }, [statusFilter, timePeriod, dateRange, searchQuery]);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -211,6 +224,16 @@ export function OrderTable() {
     XLSX.writeFile(workbook, "orders.xlsx");
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteOrder(id);
+      fetchOrders();
+      toast.error("Order Deleted");
+    } catch (err) {
+      console.log("Error:", err);
+    }
+  };
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -267,6 +290,13 @@ export function OrderTable() {
                   className="w-full max-w-sm"
                 />
               )}
+              <Input
+                type="text"
+                value={searchQuery}
+                label="Search by Bargain No"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border rounded px-2 py-2"
+              />
             </div>
             <Button
               onClick={handleDownloadExcel}
@@ -384,7 +414,7 @@ export function OrderTable() {
                                 <ChevronDownIcon className="h-5 w-5" />
                               )}
                             </IconButton>
-                            <Button
+                            {/* <Button
                               color="blue"
                               onClick={() => {
                                 setSelectedOrder(order);
@@ -392,7 +422,11 @@ export function OrderTable() {
                               }}
                             >
                               Edit
-                            </Button>
+                            </Button> */}
+                            <MdDeleteOutline
+                              onClick={() => handleDelete(order._id)}
+                              className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -413,7 +447,6 @@ export function OrderTable() {
                                       "Static Price (Rs.)",
                                       "Virtual Quantity",
                                       "Billed Quantity",
-                                      "Transfer Quantity to Billed",
                                     ].map((header) => (
                                       <th
                                         key={header}
@@ -451,35 +484,6 @@ export function OrderTable() {
                                         {item.billedQuantity
                                           ? item.billedQuantity
                                           : "0"}
-                                      </td>
-                                      <td className="border-b border-blue-gray-50 py-3 px-5 text-center">
-                                        {item.quantity > 0 && (
-                                          <>
-                                            <input
-                                              type="number"
-                                              value={
-                                                transferQuantities[item.name] ||
-                                                ""
-                                              }
-                                              onChange={(e) =>
-                                                handleTransferQuantityChange(
-                                                  item.name,
-                                                  e.target.value,
-                                                  item.quantity
-                                                )
-                                              }
-                                              className="border rounded px-2 py-1 w-[300px]"
-                                            />
-                                            {quantityErrors[item.name] && (
-                                              <Typography
-                                                variant="small"
-                                                className="text-red-600 mt-1"
-                                              >
-                                                {quantityErrors[item.name]}
-                                              </Typography>
-                                            )}
-                                          </>
-                                        )}
                                       </td>
                                     </tr>
                                   ))}

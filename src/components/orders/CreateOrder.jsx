@@ -17,7 +17,7 @@ import {
 } from "@/services/masterService";
 import { getWarehouses } from "@/services/warehouseService";
 
-const CreateOrderForm = () => {
+const CreateOrderForm = ({ fetchOrdersData }) => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [itemsOptions, setItemsOptions] = useState([]);
@@ -30,7 +30,7 @@ const CreateOrderForm = () => {
     companyBargainNo: "",
     companyBargainDate: "",
     manufacturer: "",
-    paymentDays: null,
+    paymentDays: "",
     description: "",
     billType: "",
     warehouse: "",
@@ -110,7 +110,6 @@ const CreateOrderForm = () => {
       const updatedForm = {
         ...form,
         paymentDays,
-        warehouse: "",
         organization: "64d22f5a8b3b9f47a3b0e7f1",
       };
       console.log(updatedForm);
@@ -129,7 +128,7 @@ const CreateOrderForm = () => {
         warehouse: "",
         organization: "",
       });
-      fetchOrders();
+      fetchOrdersData();
     } catch (error) {
       toast.error("Error adding order!");
       console.error(error);

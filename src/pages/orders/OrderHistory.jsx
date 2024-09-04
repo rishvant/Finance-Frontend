@@ -247,7 +247,7 @@ export function OrderTable() {
           </Typography>
         </CardHeader>
         <div className="sticky top-[0px] z-[100] mb-5 bg-white">
-          <CreateOrderForm />
+          <CreateOrderForm fetchOrdersData={fetchOrders} />
         </div>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <Typography variant="h5" className="sm:ml-8 mb-4">

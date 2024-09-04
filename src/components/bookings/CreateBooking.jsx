@@ -1,93 +1,41 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { FaPlus, FaTrashAlt } from "react-icons/fa";
 import {
-  Card,
-  CardBody,
-  CardFooter,
   Button,
   Input,
-  Textarea,
+  Spinner,
+  IconButton,
   Select,
   Option,
 } from "@material-tailwind/react";
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { createBooking } from "@/services/bookingService";
-import { getWarehouseById } from "@/services/warehouseService";
+import { createOrder, getOrders } from "@/services/orderService";
+import {
+  getBuyer,
+  getItems,
+  getManufacturer,
+  getTransport,
+} from "@/services/masterService";
+import { getWarehouses, getWarehouseById } from "@/services/warehouseService";
 
-// Validation schema for form fields
-const validationSchema = Yup.object().shape({
-  companyBargainDate: Yup.date().required("Company Bargain Date is required"),
-  companyBargainNo: Yup.string().required("Company Bargain Number is required"),
-  buyer: Yup.object().shape({
-    buyer: Yup.string().required("Buyer Name is required"),
-    buyerLocation: Yup.string().required("Buyer Location is required"),
-    buyerContact: Yup.string().required("Buyer Contact is required"),
-  }),
-  items: Yup.array().of(
-    Yup.object().shape({
-      name: Yup.string().required("Item Name is required"),
-      packaging: Yup.string().oneOf(["box", "tin"], "Invalid packaging type"),
-      type: Yup.string(),
-      weight: Yup.number().required("Weight is required").positive(),
-      staticPrice: Yup.number().required("Static Price is required").positive(),
-      quantity: Yup.number().required("Quantity is required").positive().integer(),
-    })
-  ),
-  validity: Yup.number().default(),
-  deliveryOption: Yup.string().required("Delivery Option is required"),
-  warehouse: Yup.string().required("Warehouse is required for Pickup option"),
-  deliveryAddress: Yup.object().shape({
-    addressLine1: Yup.string().required("Address Line 1 is required for Delivery option"),
-    addressLine2: Yup.string(),
-    city: Yup.string().required("City is required for Delivery option"),
-    state: Yup.string().required("State is required for Delivery option"),
-    pinCode: Yup.string().required("Pin Code is required for Delivery option"),
-  }),
-  virtualInventoryQuantities: Yup.array().of(
-    Yup.object().shape({
-      itemName: Yup.string().required("Virtual Inventory Item Name is required"),
-      quantity: Yup.number().required("Virtual Inventory Quantity is required").positive().integer(),
-    })
-  ),
-  billedInventoryQuantities: Yup.array().of(
-    Yup.object().shape({
-      itemName: Yup.string().required("Billed Inventory Item Name is required"),
-      quantity: Yup.number().required("Billed Inventory Quantity is required").positive().integer(),
-    })
-  ),
-  description: Yup.string(),
-  status: Yup.string()
-    .oneOf(["created", "payment pending", "billed", "completed"])
-    .required("Status is required"),
-  reminderDays: Yup.array().of(
-    Yup.number().positive().integer()
-  ).default([7, 3, 1]),
-});
-
-export function CreateBookingForm({ setShowCreateBookingForm }) {
-  const [itemOptions, setItemOptions] = useState([]);
-  
-  const initialValues = {
-    companyBargainDate: "",
-    companyBargainNo: "",
-    buyer: {
-      buyer: "",
-      buyerLocation: "",
-      buyerContact: "",
-    },
-    items: [
-      {
-        name: "",
-        packaging: "box",
-        type: "",
-        weight: "",
-        staticPrice: "",
-        quantity: "",
-      },
-    ],
-    validity: 21,
-    deliveryOption: "Pickup",
-    warehouse: localStorage.getItem("warehouse") || "",
+// Add state for selected warehouse data
+const CreateOrderForm = ({ fetchOrdersData }) => {
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [itemsOptions, setItemsOptions] = useState([]);
+  const [buyerOptions, setBuyerOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
+  const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+  const [form, setForm] = useState({
+    items: [{ item: "", quantity: 0, virtualQuantity: 0, billedQuantity: 0 }],
+    BargainDate: "",
+    BargainNo: "",
+    validity: "",
+    description: "",
+    warehouse: "",
+    deliveryOption: "",
+    buyer: "",
+    deliveryOption: "",
     deliveryAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -95,424 +43,418 @@ export function CreateBookingForm({ setShowCreateBookingForm }) {
       state: "",
       pinCode: "",
     },
-    virtualInventoryQuantities: [
-      {
-        itemName: "",
-        quantity: "",
-      },
-    ],
-    billedInventoryQuantities: [
-      {
-        itemName: "",
-        quantity: "",
-      },
-    ],
-    description: "",
-    status: "created",
-    reminderDays: [7, 3, 1],
-  };
-  
-  const calculateWeight = (values, index) => {
-    const item = values.items[index];
-    const category = parseFloat(item.quantityPerPiece || 0);
-    const pieces = parseInt(item.piecesPerBox || 0);
-    const boxes = parseInt(item.numberOfBoxes || 0);
-    const weightPerMl = parseFloat(item.weightPerMl || 0);
-
-    const totalMl = category * pieces * boxes;
-    const totalGrams = totalMl * weightPerMl;
-    const totalKg = totalGrams / 1000;
-    const totalMt = totalKg / 1000;
-
-    return totalMt;
-  };
+  });
 
   useEffect(() => {
-    const fetchItems = async () => {
-      const response = await getWarehouseById(localStorage.getItem("warehouse"));
-      const virtual = response.virtualInventory;
-      const billed = response.billedInventory;
-      const items = [...new Set([...virtual, ...billed].map(item => item.itemName))];
-      setItemOptions(items);
-    };
-
-    fetchItems();
+    fetchItemsOptions();
+    fetchWarehouseOptions();
+    fetchBuyerOptions();
   }, []);
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const fetchItemsOptions = async () => {
     try {
-      const updatedValues = {
-        ...values,
-        items: values.items.map((item, index) => ({
-          ...item,
-          weight: calculateWeight(values, index),
-        })),
-      };
-      const response = await createBooking(updatedValues);
-      console.log(response);
-      console.log("Form submitted with values:", updatedValues);
-      setShowCreateBookingForm(false);
+      const response = await getItems();
+      setItemsOptions(response);
     } catch (error) {
-      console.error("Error creating order:", error);
-    } finally {
-      setSubmitting(false);
+      toast.error("Error fetching items!");
+      console.error(error);
     }
   };
 
+  const fetchWarehouseOptions = async () => {
+    try {
+      const response = await getWarehouses();
+      setWarehouseOptions(response);
+    } catch (error) {
+      toast.error("Error fetching warehouses!");
+      console.error(error);
+    }
+  };
+
+  const fetchBuyerOptions = async () => {
+    try {
+      const response = await getBuyer();
+      setBuyerOptions(response);
+    } catch (error) {
+      toast.error("Error fetching buyers!");
+      console.error(error);
+    }
+  };
+
+  const fetchWarehouseData = async (warehouseId) => {
+    try {
+      const response = await getWarehouseById(warehouseId);
+      console.log(response);
+      setSelectedWarehouse(response);
+    } catch (error) {
+      toast.error("Error fetching warehouse data!");
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (form.warehouse) {
+      fetchWarehouseData(form.warehouse);
+    }
+  }, [form.warehouse]);
+
+  const calculateDaysDifference = (date1, date2) => {
+    const diffTime = Math.abs(new Date(date2) - new Date(date1));
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const validity = calculateDaysDifference(form.BargainDate, form.validity);
+      const updatedForm = {
+        ...form,
+        validity,
+        organization: "64d22f5a8b3b9f47a3b0e7f1",
+      };
+      console.log(updatedForm);
+
+      // const response = await createOrder(updatedForm);
+      // toast.success("Order added successfully!");
+      // setForm({
+      //   items: [
+      //     { item: "", quantity: 1, virtualQuantity: 0, billedQuantity: 0 },
+      //   ],
+      //   transportCatigory: "",
+      //   BargainDate: "",
+      //   BargainNo: "",
+      //   manufacturer: "",
+      //   validity: null,
+      //   description: "",
+      //   billType: "",
+      //   warehouse: "",
+      //   organization: "",
+      // });
+      // fetchOrdersData();
+    } catch (error) {
+      toast.error("Error adding booking!");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormChange = (index, fieldName, value) => {
+    if (fieldName === "items") {
+      const updatedItems = [...form.items];
+      updatedItems[index] = value;
+      setForm((prevData) => ({
+        ...prevData,
+        items: updatedItems,
+      }));
+    } else if (fieldName === "BargainDate") {
+      const formattedDate = value.split("T")[0];
+      setForm((prevData) => ({
+        ...prevData,
+        BargainDate: formattedDate,
+      }));
+    } else if (fieldName === "validity") {
+      const formattedDate = value.split("T")[0];
+      setForm((prevData) => ({
+        ...prevData,
+        validity: formattedDate,
+      }));
+    } else if (fieldName.includes("deliveryAddress")) {
+      const addressField = fieldName.split(".")[1];
+      setForm((prevData) => ({
+        ...prevData,
+        deliveryAddress: {
+          ...prevData.deliveryAddress,
+          [addressField]: value,
+        },
+      }));
+    } else {
+      setForm((prevData) => ({
+        ...prevData,
+        [fieldName]: value,
+      }));
+    }
+  };
+
+  const handleAddItem = () => {
+    setForm((prevData) => ({
+      ...prevData,
+      items: [
+        ...prevData.items,
+        { item: "", quantity: 1, virtualQuantity: 0, billedQuantity: 0 },
+      ],
+    }));
+  };
+
+  const handleRemoveItem = (index) => {
+    const updatedItems = form.items.filter((_, i) => i !== index);
+    setForm((prevData) => ({
+      ...prevData,
+      items: updatedItems,
+    }));
+  };
+
   return (
-    <Card className="w-full mx-auto">
-      <Formik
-        initialValues={initialValues}
-        // validationSchema={validationSchema}
+    <div>
+      <form
         onSubmit={handleSubmit}
+        className="flex flex-col gap-4 p-5 bg-white shadow-md rounded-xl"
       >
-        {({ isSubmitting, values }) => (
-          <Form>
-            <CardBody className="flex flex-col gap-4">
-              <div>
-                <Field
-                  name="companyBargainDate"
-                  as={Input}
-                  type="date"
-                  label="Company Bargain Date"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="companyBargainDate"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-
-              <FieldArray name="items">
-                {({ push, remove }) => (
-                  <>
-                    {values.items.map((_, index) => (
-                      <div key={index} className="flex flex-col gap-4 border border-black/20 border-[3px] rounded-lg p-4 pb-4 mb-4">
-                        <div>
-                          <Field
-                        name={`items[${index}].name`}
-                        as={Select}
-                        label="Item Name"
-                        variant="standard"
-                        fullWidth
-                      >
-                        {itemOptions.map((itemName, idx) => (
-                          <Option key={idx} value={itemName}>
-                            {itemName}
-                          </Option>
-                        ))}
-                          </Field>
-                          <ErrorMessage
-                            name={`items[${index}].name`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].packaging`}
-                            as={Select}
-                            label="Packaging"
-                            variant="standard"
-                            fullWidth
-                          >
-                            <Option value="box">Box</Option>
-                            <Option value="tin">Tin</Option>
-                          </Field>
-                          <ErrorMessage
-                            name={`items[${index}].packaging`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].weight`}
-                            as={Input}
-                            type="number"
-                            label="Weight (kg)"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].weight`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].quantity`}
-                            as={Input}
-                            type="number"
-                            label="Quantity"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].quantity`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].staticPrice`}
-                            as={Input}
-                            type="number"
-                            label="Static Price"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].staticPrice`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].quantityPerPiece`}
-                            as={Input}
-                            type="number"
-                            label="Quantity Per Piece"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].quantityPerPiece`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].piecesPerBox`}
-                            as={Input}
-                            type="number"
-                            label="Pieces Per Box"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].piecesPerBox`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].numberOfBoxes`}
-                            as={Input}
-                            type="number"
-                            label="Number of Boxes"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].numberOfBoxes`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].weightPerMl`}
-                            as={Input}
-                            type="number"
-                            label="Weight of 1 Ml of Oil (grams)"
-                            variant="standard"
-                            fullWidth
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].weightPerMl`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Field
-                            name={`items[${index}].finalWeightMetric`}
-                            as={Input}
-                            type="number"
-                            label="Final Weight in Metric Tons"
-                            variant="standard"
-                            fullWidth
-                            disabled
-                          />
-                          <ErrorMessage
-                            name={`items[${index}].finalWeightMetric`}
-                            component="div"
-                            className="text-red-600 text-sm"
-                          />
-                        </div>
-                        <Button
-                          variant="text"
-                          color="red"
-                          onClick={() => remove(index)}
-                          disabled={values.items.length === 1}
-                        >
-                          Remove Item
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="outlined"
-                      color="blue"
-                      onClick={() => push({ 
-                        name: "", 
-                        packaging: "box", 
-                        weight: "", 
-                        quantity: "", 
-                        staticPrice: "",
-                        quantityPerPiece: "",
-                        piecesPerBox: "",
-                        numberOfBoxes: "",
-                        weightPerMl: "",
-                        finalWeightMetric: "",
-                      })}
-                    >
-                      Add Item
-                    </Button>
-                  </>
-                )}
-              </FieldArray>
-
-              <div>
-                <Field
-                  name="companyBargainNo"
-                  as={Input}
-                  type="text"
-                  label="Company Bargain Number"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="companyBargainNo"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="buyer.buyer"
-                  as={Input}
-                  type="text"
-                  label="Buyer Name"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="buyer.buyer"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="buyer.buyerLocation"
-                  as={Input}
-                  type="text"
-                  label="Buyer Location"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="buyer.buyerLocation"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="buyer.buyerContact"
-                  as={Input}
-                  type="text"
-                  label="Buyer Contact"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="buyer.buyerContact"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-              <div>
-                <Field
-                  name="status"
-                  as={Select}
-                  label="Status"
-                  variant="standard"
-                  fullWidth
+        <div className="flex flex-col gap-4">
+          {form.items.map((item, index) => (
+            <div key={index} className="grid grid-cols-4 gap-2">
+              {itemsOptions?.length > 0 && (
+                <Select
+                  name="item"
+                  label={`Select Item ${index + 1}`}
+                  value={item.item}
+                  onChange={(value) =>
+                    handleFormChange(index, "items", {
+                      ...item,
+                      item: value,
+                    })
+                  }
+                  required
                 >
-                  <Option value="created">Created</Option>
-                  <Option value="payment pending">Payment Pending</Option>
-                  <Option value="billed">Billed</Option>
-                  <Option value="completed">Completed</Option>
-                </Field>
-                <ErrorMessage
-                  name="status"
-                  component="div"
-                  className="text-red-600 text-sm"
+                  {itemsOptions?.map((option) => (
+                    <Option key={option._id} value={option._id}>
+                      {option.name}
+                    </Option>
+                  ))}
+                </Select>
+              )}
+              <Input
+                name="quantity"
+                label="Quantity"
+                type="number"
+                value={item.quantity}
+                onChange={(e) =>
+                  handleFormChange(index, "items", {
+                    ...item,
+                    quantity: e.target.value,
+                  })
+                }
+                min={1}
+                required
+              />
+              <div>
+                <Input
+                  name="virtualQuantity"
+                  label="Virtual Quantity"
+                  type="number"
+                  value={item.virtualQuantity}
+                  onChange={(e) =>
+                    handleFormChange(index, "items", {
+                      ...item,
+                      virtualQuantity: e.target.value,
+                    })
+                  }
+                  min={0}
+                  required
                 />
+                <p className="text-sm text-gray-500">
+                  Available Virtual Quantity:{" "}
+                  {selectedWarehouse?.virtualInventory.find(
+                    (inv) => inv.item.toString() === item.item
+                  )?.quantity || 0}
+                </p>
               </div>
               <div>
-                <Field
-                  name="deliveryOption"
-                  as={Select}
-                  label="Delivery Type"
-                  variant="standard"
-                  fullWidth
-                >
-                  <Option value="Pickup">Pickup</Option>
-                  <Option value="Delivery">Delivery</Option>
-                </Field>
-                <ErrorMessage
-                  name="deliveryOption"
-                  component="div"
-                  className="text-red-600 text-sm"
+                <Input
+                  name="billedQuantity"
+                  label="Billed Quantity"
+                  type="number"
+                  value={item.billedQuantity}
+                  onChange={(e) =>
+                    handleFormChange(index, "items", {
+                      ...item,
+                      billedQuantity: e.target.value,
+                    })
+                  }
+                  min={0}
+                  required
                 />
+                <p className="text-sm text-gray-500">
+                  Available Billed Quantity:{" "}
+                  {selectedWarehouse?.billedInventory.find(
+                    (inv) => inv.item.toString() === item.item
+                  )?.quantity || 0}
+                </p>
               </div>
-              <div>
-                <Field
-                  name="description"
-                  as={Textarea}
-                  label="Description (Optional)"
-                  variant="standard"
-                  fullWidth
-                />
-                <ErrorMessage
-                  name="description"
-                  component="div"
-                  className="text-red-600 text-sm"
-                />
-              </div>
-            </CardBody>
-            <CardFooter className="pt-0 flex flex-row gap-5">
-              <Button
-                variant="gradient"
-                color="black"
-                fullWidth
-                onClick={()=>setShowCreateBookingForm(false)}
+              {index > 0 && (
+                <IconButton color="red" onClick={() => handleRemoveItem(index)}>
+                  <FaTrashAlt />
+                </IconButton>
+              )}
+            </div>
+          ))}
+
+          <Button
+            color="green"
+            type="button"
+            onClick={handleAddItem}
+            className="w-fit flex flex-row gap-2 items-center"
+          >
+            <FaPlus /> Add Another Item
+          </Button>
+
+          <div className="grid grid-cols-4 gap-4">
+            {warehouseOptions?.length > 0 && (
+              <Select
+                name="warehouse"
+                label="Select Warehouse"
+                value={form.warehouse}
+                onChange={(value) => handleFormChange(null, "warehouse", value)}
+                required
               >
-                Cancel
-              </Button>
-              <Button
-                variant="gradient"
-                color="blue"
-                type="submit"
-                fullWidth
-                disabled={isSubmitting}
+                {warehouseOptions?.map((option) => (
+                  <Option key={option._id} value={option._id}>
+                    {option.name}
+                  </Option>
+                ))}
+              </Select>
+            )}
+            {buyerOptions?.length > 0 && (
+              <Select
+                name="buyer"
+                label="Select Buyer"
+                value={form.buyer}
+                onChange={(value) => handleFormChange(null, "buyer", value)}
+                required
               >
-                {isSubmitting ? "Creating..." : "Create Booking"}
-              </Button>
-            </CardFooter>
-          </Form>
-        )}
-      </Formik>
-    </Card>
+                {buyerOptions?.map((option) => (
+                  <Option key={option._id} value={option._id}>
+                    {option.buyer}
+                  </Option>
+                ))}
+              </Select>
+            )}
+            <Input
+              name="BargainNo"
+              label="Company Bargain No"
+              type="text"
+              value={form.BargainNo}
+              onChange={(e) =>
+                handleFormChange(null, "BargainNo", e.target.value)
+              }
+              required
+            />
+            <Input
+              name="BargainDate"
+              label="Company Bargain Date"
+              type="date"
+              value={form.BargainDate}
+              onChange={(e) =>
+                handleFormChange(null, "BargainDate", e.target.value)
+              }
+              required
+            />
+            <Input
+              name="validity"
+              label="Payment Date"
+              type="date"
+              value={form.validity}
+              onChange={(e) =>
+                handleFormChange(null, "validity", e.target.value)
+              }
+              required
+            />
+            <Input
+              name="description"
+              label="Description"
+              type="text"
+              value={form.description}
+              onChange={(e) =>
+                handleFormChange(null, "description", e.target.value)
+              }
+            />
+
+            <Select
+              name="deliveryOption"
+              label="Select Delivery Option"
+              value={form.deliveryOption}
+              onChange={(value) => handleFormChange(0, "deliveryOption", value)}
+              required
+            >
+              <Option value="Pickup">Pickup</Option>
+              <Option value="Delivery">Delivery</Option>
+            </Select>
+          </div>
+          {form.deliveryOption === "Delivery" && (
+            <div className="grid grid-cols-5 gap-2">
+              <Input
+                name="deliveryAddress.addressLine1"
+                label="Address Line 1"
+                type="text"
+                value={form.deliveryAddress.addressLine1}
+                onChange={(e) =>
+                  handleFormChange(
+                    0,
+                    "deliveryAddress.addressLine1",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <Input
+                name="deliveryAddress.addressLine2"
+                label="Address Line 2"
+                type="text"
+                value={form.deliveryAddress.addressLine2}
+                onChange={(e) =>
+                  handleFormChange(
+                    0,
+                    "deliveryAddress.addressLine2",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <Input
+                name="deliveryAddress.city"
+                label="City"
+                type="text"
+                value={form.deliveryAddress.city}
+                onChange={(e) =>
+                  handleFormChange(0, "deliveryAddress.city", e.target.value)
+                }
+                required
+              />
+              <Input
+                name="deliveryAddress.state"
+                label="State"
+                type="text"
+                value={form.deliveryAddress.state}
+                onChange={(e) =>
+                  handleFormChange(0, "deliveryAddress.state", e.target.value)
+                }
+                required
+              />
+              <Input
+                name="deliveryAddress.pinCode"
+                label="Pin Code"
+                type="number"
+                value={form.deliveryAddress.pinCode}
+                onChange={(e) =>
+                  handleFormChange(0, "deliveryAddress.pinCode", e.target.value)
+                }
+                required
+              />
+            </div>
+          )}
+        </div>
+        <Button
+          type="submit"
+          color="blue"
+          className="w-full"
+          disabled={loading}
+        >
+          {loading ? <Spinner /> : "Submit Order"}
+        </Button>
+      </form>
+    </div>
   );
-}
+};
+
+export default CreateOrderForm;

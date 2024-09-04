@@ -39,69 +39,69 @@ export function Purchase() {
     setShowCreateOrderForm(true);
   };
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await getOrders();
-        const ordersData = response;
+  const fetchOrders = async () => {
+    try {
+      const response = await getOrders();
+      const ordersData = response;
 
-        // Filter orders based on status
-        let filteredOrders =
-          statusFilter === "All"
-            ? ordersData
-            : ordersData.filter((order) => order.status === statusFilter);
+      // Filter orders based on status
+      let filteredOrders =
+        statusFilter === "All"
+          ? ordersData
+          : ordersData.filter((order) => order.status === statusFilter);
 
-        // Filter orders based on time period
-        const now = new Date();
-        let filterDate;
+      // Filter orders based on time period
+      const now = new Date();
+      let filterDate;
 
-        if (timePeriod === "last7Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 7);
-          filteredOrders = filteredOrders.filter(
-            (order) => new Date(order.companyBargainDate) >= filterDate
-          );
-        } else if (timePeriod === "last30Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 30);
-          filteredOrders = filteredOrders.filter(
-            (order) => new Date(order.companyBargainDate) >= filterDate
-          );
-        } else if (
-          timePeriod === "custom" &&
-          dateRange.startDate &&
-          dateRange.endDate
-        ) {
-          const start = new Date(dateRange.startDate);
-          const end = new Date(dateRange.endDate);
-          filteredOrders = filteredOrders.filter((order) => {
-            const orderDate = new Date(order.companyBargainDate);
-            return orderDate >= start && orderDate <= end;
-          });
-        }
-
-        if (searchQuery) {
-          filteredOrders = filteredOrders.filter((order) =>
-            order.companyBargainNo
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-          );
-        }
-
-        // Sort orders by companyBargainDate in descending order
-        filteredOrders.sort(
-          (a, b) =>
-            new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      if (timePeriod === "last7Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 7);
+        filteredOrders = filteredOrders.filter(
+          (order) => new Date(order.companyBargainDate) >= filterDate
         );
-
-        setOrders(filteredOrders);
-      } catch (error) {
-        setError("Failed to fetch orders");
-      } finally {
-        setLoading(false);
+      } else if (timePeriod === "last30Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 30);
+        filteredOrders = filteredOrders.filter(
+          (order) => new Date(order.companyBargainDate) >= filterDate
+        );
+      } else if (
+        timePeriod === "custom" &&
+        dateRange.startDate &&
+        dateRange.endDate
+      ) {
+        const start = new Date(dateRange.startDate);
+        const end = new Date(dateRange.endDate);
+        filteredOrders = filteredOrders.filter((order) => {
+          const orderDate = new Date(order.companyBargainDate);
+          return orderDate >= start && orderDate <= end;
+        });
       }
-    };
 
+      if (searchQuery) {
+        filteredOrders = filteredOrders.filter((order) =>
+          order.companyBargainNo
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // Sort orders by companyBargainDate in descending order
+      filteredOrders.sort(
+        (a, b) =>
+          new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      );
+
+      setOrders(filteredOrders);
+    } catch (error) {
+      setError("Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, [statusFilter, timePeriod, dateRange, searchQuery]);
 
@@ -170,9 +170,8 @@ export function Purchase() {
                 >
                   <option value="All">All Statuses</option>
                   <option value="created">Created</option>
+                  <option value="partially paid">Partially Paid</option>
                   <option value="billed">Billed</option>
-                  <option value="payment pending">Payment Pending</option>
-                  <option value="completed">Completed</option>
                 </select>
                 <select
                   value={timePeriod}
@@ -227,14 +226,13 @@ export function Purchase() {
                 <thead>
                   <tr>
                     {[
-                      "Company Bargain Date",
                       "Company Bargain No",
-                      "Seller Name",
-                      "Seller Location",
-                      "Seller Contact",
+                      "Company Bargain Date",
+                      "Manufacturer Name",
+                      "Manufacturer Company",
+                      "Manufacturer Contact",
                       "Status",
-                      "Transport Type",
-                      "Transport Location",
+                      "Transport Category",
                       "Actions",
                     ].map((el) => (
                       <th
@@ -261,27 +259,27 @@ export function Purchase() {
                         <tr>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {formatDate(order.companyBargainDate)}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography className="text-xs font-semibold text-center text-blue-gray-600">
                               {order.companyBargainNo}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.sellerName}
+                              {formatDate(order.companyBargainDate)}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.sellerLocation}
+                              {order.manufacturer.manufacturer}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.sellerContact}
+                              {order.manufacturer.manufacturerCompany}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography className="text-xs font-semibold text-center text-blue-gray-600">
+                              {order.manufacturer.manufacturerContact}
                             </Typography>
                           </td>
                           <td className={className}>
@@ -291,8 +289,6 @@ export function Purchase() {
                               color={
                                 order.status === "created"
                                   ? "blue"
-                                  : order.status === "payment pending"
-                                  ? "yellow"
                                   : order.status === "billed"
                                   ? "green"
                                   : "red"
@@ -301,12 +297,7 @@ export function Purchase() {
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.transportType}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.transportLocation}
+                              {order.transportCatigory}
                             </Typography>
                           </td>
                           <td className={className}>
@@ -322,16 +313,18 @@ export function Purchase() {
                                   <ChevronDownIcon className="h-5 w-5" />
                                 )}
                               </IconButton>
-                              <Button
-                                to="/dashboard/purchase/history"
-                                color="blue"
-                                onClick={() => {
-                                  setSelectedOrder(order);
-                                  setPurchaseModal(true);
-                                }}
-                              >
-                                Create
-                              </Button>
+                              {order.status !== "billed" && (
+                                <Button
+                                  to="/dashboard/purchase/history"
+                                  color="blue"
+                                  onClick={() => {
+                                    setSelectedOrder(order);
+                                    setPurchaseModal(true);
+                                  }}
+                                >
+                                  Create
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -339,7 +332,7 @@ export function Purchase() {
                           <tr className="bg-gray-100">
                             <td colSpan="11">
                               <div className="p-4 border-t border-blue-gray-200">
-                                <Typography variant="h6" className="mb-4">
+                                <Typography variant="h6" className="mb-4 px-8">
                                   Items
                                 </Typography>
                                 <table className="w-full table-auto">
@@ -350,8 +343,7 @@ export function Purchase() {
                                         "Packaging",
                                         "Weight",
                                         "Static Price (Rs.)",
-                                        "Virtual Quantity",
-                                        "Billed Quantity",
+                                        "Quantity",
                                       ].map((header) => (
                                         <th
                                           key={header}
@@ -369,29 +361,21 @@ export function Purchase() {
                                   </thead>
                                   <tbody>
                                     {order.items.map((item) => (
-                                      <tr key={item.name}>
+                                      <tr key={item._id}>
                                         <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                          {item.name}
+                                          {item.item.name}
                                         </td>
                                         <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                          {item.packaging}
+                                          {item.item.packaging}
                                         </td>
                                         <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                          {item.weight}
+                                          {item.item.weight}
                                         </td>
                                         <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                          {item.staticPrice}
+                                          {item.item.staticPrice}
                                         </td>
                                         <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
                                           {item.quantity}
-                                        </td>
-                                        <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                          {item.billedQuantity
-                                            ? item.billedQuantity
-                                            : "0"}
-                                        </td>
-                                        <td className="border-b border-blue-gray-50 py-3 px-5 text-center">
-                                          {item.quantity > 0 && <></>}
                                         </td>
                                       </tr>
                                     ))}
@@ -415,7 +399,11 @@ export function Purchase() {
         </Card>
       </div>
       {purchaseModal && (
-        <PurchaseModal setModal={setPurchaseModal} order={selectedOrder} />
+        <PurchaseModal
+          fetchOrder={fetchOrders}
+          setModal={setPurchaseModal}
+          order={selectedOrder}
+        />
       )}
     </>
   );

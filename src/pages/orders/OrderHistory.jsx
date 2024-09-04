@@ -109,6 +109,8 @@ export function OrderTable() {
     }
   };
 
+  console.log(orders);
+
   useEffect(() => {
     fetchOrders();
   }, [statusFilter, timePeriod, dateRange, searchQuery]);
@@ -319,14 +321,13 @@ export function OrderTable() {
               <thead>
                 <tr>
                   {[
-                    "Company Bargain Date",
                     "Company Bargain No",
-                    "Seller Name",
-                    "Seller Location",
-                    "Seller Contact",
+                    "Company Bargain Date",
+                    "Manufacturer Name",
+                    "Manufacturer Company",
+                    "Manufacturer Contact",
                     "Status",
-                    "Transport Type",
-                    "Transport Location",
+                    "Transport Category",
                     "Actions",
                   ].map((el) => (
                     <th
@@ -353,27 +354,27 @@ export function OrderTable() {
                       <tr>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {formatDate(order.companyBargainDate)}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <Typography className="text-xs font-semibold text-center text-blue-gray-600">
                             {order.companyBargainNo}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {order.sellerName}
+                            {formatDate(order.companyBargainDate)}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {order.sellerLocation}
+                            {order.manufacturer.manufacturer}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {order.sellerContact}
+                            {order.manufacturer.manufacturerCompany}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-center text-blue-gray-600">
+                            {order.manufacturer.manufacturerContact}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -393,12 +394,7 @@ export function OrderTable() {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {order.transportType}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {order.transportLocation}
+                            {order.transportCatigory}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -434,7 +430,7 @@ export function OrderTable() {
                         <tr className="bg-gray-100">
                           <td colSpan="11">
                             <div className="p-4 border-t border-blue-gray-200">
-                              <Typography variant="h6" className="mb-4">
+                              <Typography variant="h6" className="mb-4 px-8">
                                 Items
                               </Typography>
                               <table className="w-full table-auto">
@@ -445,8 +441,7 @@ export function OrderTable() {
                                       "Packaging",
                                       "Weight",
                                       "Static Price (Rs.)",
-                                      "Virtual Quantity",
-                                      "Billed Quantity",
+                                      "Quantity",
                                     ].map((header) => (
                                       <th
                                         key={header}
@@ -464,41 +459,26 @@ export function OrderTable() {
                                 </thead>
                                 <tbody>
                                   {order.items.map((item) => (
-                                    <tr key={item.name}>
+                                    <tr key={item._id}>
                                       <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.name}
+                                        {item.item.name}
                                       </td>
                                       <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.packaging}
+                                        {item.item.packaging}
                                       </td>
                                       <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.weight}
+                                        {item.item.weight}
                                       </td>
                                       <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.staticPrice}
+                                        {item.item.staticPrice}
                                       </td>
                                       <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
                                         {item.quantity}
-                                      </td>
-                                      <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.billedQuantity
-                                          ? item.billedQuantity
-                                          : "0"}
                                       </td>
                                     </tr>
                                   ))}
                                 </tbody>
                               </table>
-                              <div className="mt-4 flex justify-end">
-                                <Button
-                                  variant="gradient"
-                                  color="green"
-                                  onClick={() => handleTransferSubmit(order)}
-                                  disabled={hasErrors}
-                                >
-                                  Submit Transfer
-                                </Button>
-                              </div>
                             </div>
                           </td>
                         </tr>

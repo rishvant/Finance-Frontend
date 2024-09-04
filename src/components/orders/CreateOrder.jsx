@@ -32,7 +32,7 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
     manufacturer: "",
     paymentDays: "",
     description: "",
-    billType: "",
+    billType: "Virtual Billed",
     warehouse: "",
   });
 
@@ -124,7 +124,6 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
         manufacturer: "",
         paymentDays: null,
         description: "",
-        billType: "",
         warehouse: "",
         organization: "",
       });
@@ -294,7 +293,7 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
               </Select>
             )}
 
-            <Select
+            {/* <Select
               name="billType"
               label="Select Bill Type"
               value={form.billType}
@@ -303,7 +302,7 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
             >
               <Option value="Virtual Billed">Virtual Billed</Option>
               <Option value="Billed">Billed</Option>
-            </Select>
+            </Select> */}
           </div>
 
           <div className="grid grid-cols-5 gap-2">

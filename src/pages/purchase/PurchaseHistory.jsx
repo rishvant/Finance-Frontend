@@ -56,6 +56,8 @@ const PurchaseHistory = () => {
     purchase.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  console.log(filteredPurchases)
+
   return (
     <Card className="mt-12">
       <CardHeader
@@ -99,7 +101,9 @@ const PurchaseHistory = () => {
                 {[
                   "Invoice Number",
                   "Invoice Date",
-                  "Transporter",
+                  "Transport",
+                  "Transport Agency",
+                  "Transport Contact",
                   "Warehouse",
                   "Order",
                   "Actions",
@@ -138,17 +142,27 @@ const PurchaseHistory = () => {
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.transporterId}
+                          {purchase.transporterId.transport}
                         </Typography>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.warehouse}
+                          {purchase.transporterId.transportAgency}
                         </Typography>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.orderId}
+                          {purchase.transporterId.transportContact}
+                        </Typography>
+                      </td>
+                      <td className={className}>
+                        <Typography className="text-xs font-semibold text-center text-blue-gray-600">
+                          {purchase.warehouseId.name}
+                        </Typography>
+                      </td>
+                      <td className={className}>
+                        <Typography className="text-xs font-semibold text-center text-blue-gray-600">
+                          {purchase.orderId?.companyBargainNo}
                         </Typography>
                       </td>
                       <td className={className}>
@@ -177,7 +191,7 @@ const PurchaseHistory = () => {
                             <table className="w-full table-auto">
                               <thead>
                                 <tr>
-                                  {["Item Name", "Quantity"].map((header) => (
+                                  {["Item Name", "Packaging", "Static Price", "Type", "Weight", "Quantity"].map((header) => (
                                     <th
                                       key={header}
                                       className="border-b border-blue-gray-50 py-3 px-5 text-left"
@@ -194,9 +208,21 @@ const PurchaseHistory = () => {
                               </thead>
                               <tbody>
                                 {purchase.items.map((item) => (
-                                  <tr key={item.name}>
+                                  <tr key={item._id}>
                                     <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                      {item.name}
+                                      {item.itemId.name}
+                                    </td>
+                                    <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
+                                      {item.itemId.packaging}
+                                    </td>
+                                    <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
+                                      {item.itemId.staticPrice}
+                                    </td>
+                                    <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
+                                      {item.itemId.type}
+                                    </td>
+                                    <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
+                                      {item.itemId.weight}
                                     </td>
                                     <td className="border-b border-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
                                       {item.quantity}

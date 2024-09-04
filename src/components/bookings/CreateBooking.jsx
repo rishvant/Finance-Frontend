@@ -9,19 +9,13 @@ import {
   Select,
   Option,
 } from "@material-tailwind/react";
-import { createOrder, getOrders } from "@/services/orderService";
-import {
-  getBuyer,
-  getItems,
-  getManufacturer,
-  getTransport,
-} from "@/services/masterService";
+import { getBuyer, getItems } from "@/services/masterService";
 import { getWarehouses, getWarehouseById } from "@/services/warehouseService";
+import { createBooking } from "@/services/bookingService";
 
 // Add state for selected warehouse data
-const CreateOrderForm = ({ fetchOrdersData }) => {
+const CreateBookingForm = ({ fetchBookings }) => {
   const [loading, setLoading] = useState(false);
-  const [orders, setOrders] = useState([]);
   const [itemsOptions, setItemsOptions] = useState([]);
   const [buyerOptions, setBuyerOptions] = useState([]);
   const [warehouseOptions, setWarehouseOptions] = useState([]);
@@ -111,12 +105,13 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
       const updatedForm = {
         ...form,
         validity,
-        organization: "64d22f5a8b3b9f47a3b0e7f1",
+        organization: "66d56a1c8fd16e15f878ff6c",
       };
       console.log(updatedForm);
 
-      // const response = await createOrder(updatedForm);
-      // toast.success("Order added successfully!");
+      const response = await createBooking(updatedForm);
+      console.log(response)
+      toast.success("Booking added successfully!");
       // setForm({
       //   items: [
       //     { item: "", quantity: 1, virtualQuantity: 0, billedQuantity: 0 },
@@ -131,7 +126,7 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
       //   warehouse: "",
       //   organization: "",
       // });
-      // fetchOrdersData();
+      fetchBookings();
     } catch (error) {
       toast.error("Error adding booking!");
       console.error(error);
@@ -182,7 +177,7 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
       ...prevData,
       items: [
         ...prevData.items,
-        { item: "", quantity: 1, virtualQuantity: 0, billedQuantity: 0 },
+        { item: "", quantity: 0, virtualQuantity: 0, billedQuantity: 0 },
       ],
     }));
   };
@@ -444,17 +439,12 @@ const CreateOrderForm = ({ fetchOrdersData }) => {
             </div>
           )}
         </div>
-        <Button
-          type="submit"
-          color="blue"
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? <Spinner /> : "Submit Order"}
+        <Button type="submit" color="blue" className="w-fit" disabled={loading}>
+          {loading ? <Spinner /> : "Create Booking"}
         </Button>
       </form>
     </div>
   );
 };
 
-export default CreateOrderForm;
+export default CreateBookingForm;

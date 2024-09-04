@@ -41,62 +41,63 @@ export function Booking() {
     setBookingForm(true);
   };
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const response = await getBookings();
-        const bookingsData = response;
-        let filteredBookings =
-          statusFilter === "All"
-            ? bookingsData
-            : bookingsData.filter((booking) => booking.status === statusFilter);
+  const fetchBookings = async () => {
+    try {
+      const response = await getBookings();
+      const bookingsData = response;
+      let filteredBookings =
+        statusFilter === "All"
+          ? bookingsData
+          : bookingsData.filter((booking) => booking.status === statusFilter);
 
-        const now = new Date();
-        let filterDate;
+      const now = new Date();
+      let filterDate;
 
-        if (timePeriod === "last7Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 7);
-          filteredBookings = filteredBookings.filter(
-            (booking) => new Date(booking.companyBargainDate) >= filterDate
-          );
-        } else if (timePeriod === "last30Days") {
-          filterDate = new Date();
-          filterDate.setDate(now.getDate() - 30);
-          filteredBookings = filteredBookings.filter(
-            (booking) => new Date(booking.companyBargainDate) >= filterDate
-          );
-        } else if (
-          timePeriod === "custom" &&
-          dateRange.startDate &&
-          dateRange.endDate
-        ) {
-          const start = new Date(dateRange.startDate);
-          const end = new Date(dateRange.endDate);
-          filteredBookings = filteredBookings.filter((booking) => {
-            const bookingDate = new Date(booking.companyBargainDate);
-            return bookingDate >= start && bookingDate <= end;
-          });
-        }
-
-        // Sort bookings by companyBargainDate in descending booking
-        filteredBookings.sort(
-          (a, b) =>
-            new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      if (timePeriod === "last7Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 7);
+        filteredBookings = filteredBookings.filter(
+          (booking) => new Date(booking.companyBargainDate) >= filterDate
         );
-
-        console.log(filteredBookings);
-
-        setBookings(filteredBookings);
-      } catch (error) {
-        setError("Failed to fetch bookings");
-      } finally {
-        setLoading(false);
+      } else if (timePeriod === "last30Days") {
+        filterDate = new Date();
+        filterDate.setDate(now.getDate() - 30);
+        filteredBookings = filteredBookings.filter(
+          (booking) => new Date(booking.companyBargainDate) >= filterDate
+        );
+      } else if (
+        timePeriod === "custom" &&
+        dateRange.startDate &&
+        dateRange.endDate
+      ) {
+        const start = new Date(dateRange.startDate);
+        const end = new Date(dateRange.endDate);
+        filteredBookings = filteredBookings.filter((booking) => {
+          const bookingDate = new Date(booking.companyBargainDate);
+          return bookingDate >= start && bookingDate <= end;
+        });
       }
-    };
 
+      // Sort bookings by companyBargainDate in descending booking
+      filteredBookings.sort(
+        (a, b) =>
+          new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
+      );
+
+      console.log(filteredBookings);
+
+      setBookings(filteredBookings);
+    } catch (error) {
+      setError("Failed to fetch bookings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchBookings();
   }, [statusFilter, timePeriod, dateRange]);
+
   const formatDate = (date) => {
     const d = new Date(date);
     if (isNaN(d.getTime())) {
@@ -184,10 +185,12 @@ export function Booking() {
     }
   };
 
+  console.log(bookings);
+
   const handleDownloadExcel = () => {
     const formattedbookings = bookings.map((booking) => ({
-      "Company Bargain No": booking.companyBargainNo,
-      "Company Bargain Date": formatDate(booking.companyBargainDate),
+      "Company Bargain No": booking.BargainNo,
+      // "Company Bargain Date": formatDate(booking.BargainDate),
       "Buyer Name": booking.buyer?.buyer,
       "Buyer Location": booking.buyer?.buyerLocation,
       "Buyer Contact": booking.buyer?.buyerContact,
@@ -205,8 +208,8 @@ export function Booking() {
         booking.deliveryAddress?.pinCode,
       "Bill Type": booking.billType,
       Description: booking.description,
-      "Created At": formatDate(booking.createdAt),
-      "Updated At": formatDate(booking.updatedAt),
+      // "Created At": formatDate(booking.createdAt),
+      // "Updated At": formatDate(booking.updatedAt),
       "Payment Days": booking.paymentDays,
       "Reminder Days": booking.reminderDays.join(", "),
     }));
@@ -230,7 +233,7 @@ export function Booking() {
           </Typography>
         </CardHeader>
         <div className="sticky top-[0px] z-[100] mb-5 bg-white">
-          <CreateBookingForm />
+          <CreateBookingForm fetchBookings={fetchBookings} />
         </div>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <div className="mb-4 flex flex-row gap-4 px-8 justify-between">
@@ -292,8 +295,8 @@ export function Booking() {
               <thead>
                 <tr>
                   {[
-                    "Company Bargain Date",
-                    "Company Bargain No",
+                    "Bargain Date",
+                    "Bargain No",
                     "Buyer Name",
                     "Buyer Location",
                     "Buyer Contact",
@@ -317,7 +320,7 @@ export function Booking() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((booking) => {
+                {bookings?.map((booking) => {
                   const className = `py-3 px-3 bbooking-b bbooking-blue-gray-50 text-center`;
                   const isOpen = openBooking === booking._id;
 
@@ -326,12 +329,13 @@ export function Booking() {
                       <tr>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {formatDate(booking.companyBargainDate)}
+                            {booking.BargainDate &&
+                              formatDate(booking?.BargainDate)}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {booking.companyBargainNo}
+                            {booking?.BargainNo}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -341,7 +345,17 @@ export function Booking() {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {booking.buyer?.buyerLocation}
+                            {booking.buyer?.buyerdeliveryAddress.addressLine1 &&
+                              booking.buyer?.buyerdeliveryAddress.addressLine1 +
+                                ", "}
+                            {booking.buyer?.buyerdeliveryAddress.addressLine2 &&
+                              booking.buyer?.buyerdeliveryAddress.addressLine2 +
+                                ", "}
+                            {booking.buyer?.buyerdeliveryAddress.city &&
+                              booking.buyer?.buyerdeliveryAddress.city + ", "}
+                            {booking.buyer?.buyerdeliveryAddress.state &&
+                              booking.buyer?.buyerdeliveryAddress.state + ", "}
+                            {booking.buyer?.buyerdeliveryAddress.pinCode}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -371,10 +385,17 @@ export function Booking() {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                            {booking.deliveryAddress?.addressLine1},{" "}
-                            {booking.deliveryAddress?.addressLine2},{" "}
-                            {booking.deliveryAddress?.city},{" "}
-                            {booking.deliveryAddress?.state},{" "}
+                            {booking.deliveryOption === "Pickup" && (
+                              <span>Pickup</span>
+                            )}
+                            {booking.deliveryAddress?.addressLine1 &&
+                              booking.deliveryAddress?.addressLine1 + ", "}
+                            {booking.deliveryAddress?.addressLine2 &&
+                              booking.deliveryAddress?.addressLine2 + ", "}
+                            {booking.deliveryAddress?.city &&
+                              booking.deliveryAddress?.city + ", "}
+                            {booking.deliveryAddress?.state &&
+                              booking.deliveryAddress?.state + ", "}
                             {booking.deliveryAddress?.pinCode}
                           </Typography>
                         </td>
@@ -439,19 +460,21 @@ export function Booking() {
                                   {booking.items.map((item) => (
                                     <tr key={item.name}>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.name}
+                                        {item.item.name}
                                       </td>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.packaging}
+                                        {item.item.packaging}
                                       </td>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.weight}
+                                        {item.item.weight}
                                       </td>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.staticPrice}
+                                        {item.item.staticPrice}
                                       </td>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
-                                        {item.quantity}
+                                        {item.virtualQuantity
+                                          ? item.virtualQuantity
+                                          : "0"}{" "}
                                       </td>
                                       <td className="bbooking-b bbooking-blue-gray-50 py-3 px-5 text-center text-blue-gray-600">
                                         {item.billedQuantity

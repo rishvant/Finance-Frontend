@@ -18,7 +18,7 @@ import {
 import { fetchWarehouse, getWarehouses } from "@/services/warehouseService";
 import { createPurchase } from "@/services/purchaseService";
 
-const PurchaseModal = ({ setModal, order }) => {
+const PurchaseModal = ({ setModal, order, fetchOrder }) => {
   const [loading, setLoading] = useState(false);
   const [itemsOptions, setItemsOptions] = useState([]);
   const [transportOptions, setTransportOptions] = useState([]);
@@ -36,7 +36,7 @@ const PurchaseModal = ({ setModal, order }) => {
 
   const [form, setForm] = useState({
     items: order.items.map((item) => ({
-      itemId: item.item,
+      itemId: item.item?._id,
       quantity: item.quantity,
     })),
     transporterId: "",
@@ -93,20 +93,15 @@ const PurchaseModal = ({ setModal, order }) => {
   //     }
   //   };
 
-  console.log(order);
-
   const fetchWarehouseOptions = async () => {
     try {
       const response = await getWarehouses();
-      console.log(response);
       setWarehouseOptions(response);
     } catch (error) {
       toast.error("Error fetching warehouses!");
       console.error(error);
     }
   };
-
-  console.log(order);
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -156,21 +151,20 @@ const PurchaseModal = ({ setModal, order }) => {
       };
 
       const response = await createPurchase(finalData);
-      console.log(response);
-      console.log(finalData);
-      toast.success("Order added successfully!");
-
-      // setForm({
-      //   items: order.items.map((item) => ({
-      //     itemId: item.itemId,
-      //     quantity: item.quantity,
-      //   })),
-      //   transporterId: "",
-      //   orderId: order._id,
-      //   invoiceNumber: "",
-      //   invoiceDate: "",
-      //   warehouseId: "",
-      // });
+      setModal(false);
+      toast.success("Purchase added successfully!");
+      setForm({
+        items: order.items.map((item) => ({
+          itemId: item.itemId,
+          quantity: item.quantity,
+        })),
+        transporterId: "",
+        orderId: order._id,
+        invoiceNumber: "",
+        invoiceDate: "",
+        warehouseId: "",
+      });
+      fetchOrder();
     } catch (error) {
       toast.error("Error adding order!");
       console.error(error);
@@ -178,6 +172,8 @@ const PurchaseModal = ({ setModal, order }) => {
       setLoading(false);
     }
   };
+
+  console.log(order.items);
 
   const handleFormChange = (index, fieldName, value) => {
     if (fieldName === "items") {
@@ -208,7 +204,7 @@ const PurchaseModal = ({ setModal, order }) => {
       id="default-modal"
       tabIndex="-1"
       aria-hidden="true"
-      className="fixed inset-0 z-50 flex items-center justify-center w-full h-full overflow-y-auto overflow-x-hidden bg-gray-900 bg-opacity-50"
+      className="fixed inset-0 z-[1000] flex items-center justify-center w-full h-full overflow-y-auto overflow-x-hidden bg-gray-900 bg-opacity-50"
     >
       <div className="relative p-4 w-fit max-w-[700px] h-fit">
         <form
@@ -221,7 +217,7 @@ const PurchaseModal = ({ setModal, order }) => {
                 <div key={index} className="grid grid-cols-3 gap-2">
                   <Input
                     name="itemId"
-                    label={`${item.name}`}
+                    label={`${item.item?.name}`}
                     value={form.items[index]?._id || ""}
                     disabled
                   />
@@ -229,7 +225,7 @@ const PurchaseModal = ({ setModal, order }) => {
                     name="quantity"
                     label="Quantity"
                     type="number"
-                    value={form.items[index]?.quantity || ""}
+                    value={form.items[index]?.quantity}
                     onChange={(e) =>
                       handleFormChange(index, "items", {
                         ...form.items[index],

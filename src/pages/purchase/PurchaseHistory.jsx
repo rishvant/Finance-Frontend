@@ -7,11 +7,14 @@ import {
   CardHeader,
   IconButton,
   Input,
+  Tooltip,
   Typography,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
+import { generateInvoicePDF } from "@/utils/generateInvoicePdf";
+import { FaDownload } from "react-icons/fa";
 
 const PurchaseHistory = () => {
   const [purchases, setPurchases] = useState([]);
@@ -56,7 +59,9 @@ const PurchaseHistory = () => {
     purchase.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log(filteredPurchases)
+  const handleDownloadInvoice = async (purchase) => {
+    await generateInvoicePDF(purchase);
+  };
 
   return (
     <Card className="mt-12">
@@ -178,6 +183,14 @@ const PurchaseHistory = () => {
                               <ChevronDownIcon className="h-5 w-5" />
                             )}
                           </IconButton>
+                          <Tooltip content="Download Invoice">
+                            <span className="w-fit h-fit">
+                              <FaDownload
+                                className="text-[1.2rem] mt-2 cursor-pointer"
+                                onClick={() => handleDownloadInvoice(purchase)}
+                              />
+                            </span>
+                          </Tooltip>
                         </div>
                       </td>
                     </tr>
@@ -191,7 +204,14 @@ const PurchaseHistory = () => {
                             <table className="w-full table-auto">
                               <thead>
                                 <tr>
-                                  {["Item Name", "Packaging", "Static Price", "Type", "Weight", "Quantity"].map((header) => (
+                                  {[
+                                    "Item Name",
+                                    "Packaging",
+                                    "Static Price",
+                                    "Type",
+                                    "Weight",
+                                    "Quantity",
+                                  ].map((header) => (
                                     <th
                                       key={header}
                                       className="border-b border-blue-gray-50 py-3 px-5 text-left"

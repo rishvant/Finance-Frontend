@@ -8,6 +8,7 @@ import {
   Chip,
   IconButton,
   Input,
+  Tooltip,
 } from "@material-tailwind/react";
 import {
   deleteOrder,
@@ -419,10 +420,14 @@ export function OrderTable() {
                             >
                               Edit
                             </Button> */}
-                            <MdDeleteOutline
-                              onClick={() => handleDelete(order._id)}
-                              className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
-                            />
+                            <Tooltip content="Delete Order">
+                              <span className="w-fit h-fit">
+                                <MdDeleteOutline
+                                  onClick={() => handleDelete(order._id)}
+                                  className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
+                                />
+                              </span>
+                            </Tooltip>
                           </div>
                         </td>
                       </tr>

@@ -147,22 +147,22 @@ const PurchaseHistory = () => {
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.transporterId.transport}
+                          {purchase.transporterId?.transport}
                         </Typography>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.transporterId.transportAgency}
+                          {purchase.transporterId?.transportAgency}
                         </Typography>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.transporterId.transportContact}
+                          {purchase.transporterId?.transportContact}
                         </Typography>
                       </td>
                       <td className={className}>
                         <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                          {purchase.warehouseId.name}
+                          {purchase.warehouseId?.name}
                         </Typography>
                       </td>
                       <td className={className}>

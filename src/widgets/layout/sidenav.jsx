@@ -5,6 +5,7 @@ import {
   Avatar,
   Button,
   IconButton,
+  Tooltip,
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
@@ -97,7 +98,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         className="flex items-center gap-4 px-4 capitalize"
                         fullWidth
                       >
-                        {icon}
+                        <Tooltip content={name}>
+                          <span className="justify-center items-center">{icon}</span>
+                        </Tooltip>
                         {openSidenav && (
                           <Typography
                             color="inherit"

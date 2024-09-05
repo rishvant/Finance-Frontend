@@ -14,7 +14,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import Datepicker from "react-tailwindcss-datepicker";
 import * as XLSX from "xlsx";
 import excel from "../../assets/excel.png";
-import PurchaseModal from "@/components/orders/PurchaseModal";
+import PurchaseModal from "@/components/purchase/PurchaseModal";
 
 export function Purchase() {
   const [showCreateOrderForm, setShowCreateOrderForm] = useState(false);
@@ -269,17 +269,17 @@ export function Purchase() {
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.manufacturer.manufacturer}
+                              {order.manufacturer?.manufacturer}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.manufacturer.manufacturerCompany}
+                              {order.manufacturer?.manufacturerCompany}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography className="text-xs font-semibold text-center text-blue-gray-600">
-                              {order.manufacturer.manufacturerContact}
+                              {order.manufacturer?.manufacturerContact}
                             </Typography>
                           </td>
                           <td className={className}>

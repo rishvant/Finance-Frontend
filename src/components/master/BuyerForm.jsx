@@ -261,6 +261,7 @@ const BuyerForm = () => {
             type="text"
             value={form.buyerGstno}
             onChange={handleChange}
+            required
           />
           <Input
             name="buyerGooglemaps"

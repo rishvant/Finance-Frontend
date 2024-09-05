@@ -110,7 +110,7 @@ const CreateBookingForm = ({ fetchBookings }) => {
       console.log(updatedForm);
 
       const response = await createBooking(updatedForm);
-      console.log(response)
+      console.log(response);
       toast.success("Booking added successfully!");
       // setForm({
       //   items: [

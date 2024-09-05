@@ -26,6 +26,9 @@ export const generateInvoicePDF = async (purchase) => {
     if (purchase.orderId) {
         doc.text(`Order Number: ${purchase.orderId.companyBargainNo}`, 40, 190);
     }
+    else if (purchase.bookingId) {
+        doc.text(`Booking Number: ${purchase.bookingId.BargainNo}`, 40, 190);
+    }
 
     // Items Table
     const items = purchase.items.map((item, index) => [

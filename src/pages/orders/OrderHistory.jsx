@@ -385,7 +385,7 @@ export function OrderTable() {
                             color={
                               order.status === "created"
                                 ? "blue"
-                                : order.status === "payment pending"
+                                : order.status === "partially paid"
                                 ? "yellow"
                                 : order.status === "billed"
                                 ? "green"

@@ -20,6 +20,7 @@ import { MdAnalytics } from "react-icons/md";
 import { TbReceiptRupee } from "react-icons/tb";
 import { Purchase } from "./pages/purchase/Purchase";
 import PurchaseHistory from "./pages/purchase/PurchaseHistory";
+import SalesHistory from "./pages/sales/SalesHistory";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -67,9 +68,9 @@ export const routes = [
       },
       {
         icon: <TbReceiptRupee {...icon} />,
-        name: "sell",
-        path: "/sell",
-        element: <Booking />,
+        name: "sales",
+        path: "/sales",
+        element: <SalesHistory />,
       },
       // {
       //   icon: <UserCircleIcon {...icon} />,

@@ -17,16 +17,14 @@ import excel from "../../assets/excel.png";
 import PurchaseModal from "@/components/purchase/PurchaseModal";
 
 export function Purchase() {
-  const [showCreateOrderForm, setShowCreateOrderForm] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showEditOrderForm, setShowEditOrderForm] = useState(false);
-  const [openOrder, setOpenOrder] = useState(null); // Manage open order dropdown
-  const [statusFilter, setStatusFilter] = useState("All"); // State for status filter
-  const [startDate, setStartDate] = useState(""); // State for start date
-  const [endDate, setEndDate] = useState(""); // State for end date
+  const [openOrder, setOpenOrder] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [timePeriod, setTimePeriod] = useState("All");
   const [dateRange, setDateRange] = useState({
     startDate: null,
@@ -34,10 +32,6 @@ export function Purchase() {
   });
   const [purchaseModal, setPurchaseModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleCreateOrderClick = () => {
-    setShowCreateOrderForm(true);
-  };
 
   const fetchOrders = async () => {
     try {
@@ -289,6 +283,8 @@ export function Purchase() {
                               color={
                                 order.status === "created"
                                   ? "blue"
+                                  : order.status === "partially paid"
+                                  ? "yellow"
                                   : order.status === "billed"
                                   ? "green"
                                   : "red"

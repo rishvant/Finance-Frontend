@@ -370,9 +370,9 @@ export function Booking() {
                             color={
                               booking.status === "created"
                                 ? "blue"
-                                : booking.status === "payment pending"
+                                : booking.status === "partially sold"
                                 ? "yellow"
-                                : booking.status === "billed"
+                                : booking.status === "fully sold"
                                 ? "green"
                                 : "red"
                             }

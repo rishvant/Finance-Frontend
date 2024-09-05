@@ -7,7 +7,12 @@ export const generateInvoicePDF = async (purchase) => {
 
     // Title
     doc.setFontSize(18);
-    doc.text("Invoice", 40, 40);
+    if (purchase.orderId) {
+        doc.text("Purchase Invoice", 40, 40);
+    }
+    else if (purchase.bookingId) {
+        doc.text("Sales Invoice", 40, 40);
+    }
 
     // Invoice Number and Date
     doc.setFontSize(12);

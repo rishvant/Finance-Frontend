@@ -123,8 +123,8 @@ export function OrderTable() {
   }, [statusFilter, timePeriod, dateRange, searchQuery]);
 
   const hasFutureBookings = (order, bookings) => {
-    return bookings.some(
-      (booking) => new Date(booking.createdAt) > new Date(order.createdAt)
+    return bookings?.some(
+      (booking) => new Date(booking?.createdAt) > new Date(order?.createdAt)
     );
   };
 

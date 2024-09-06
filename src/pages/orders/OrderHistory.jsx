@@ -23,6 +23,7 @@ import * as XLSX from "xlsx";
 import excel from "../../assets/excel.png";
 import CreateOrderForm from "@/components/orders/CreateOrder";
 import { MdDeleteOutline } from "react-icons/md";
+import { getBookings } from "@/services/bookingService";
 
 export function OrderTable() {
   const [showCreateOrderForm, setShowCreateOrderForm] = useState(false);
@@ -43,10 +44,7 @@ export function OrderTable() {
     endDate: null,
   });
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleCreateOrderClick = () => {
-    setShowCreateOrderForm(true);
-  };
+  const [bookings, setBookings] = useState();
 
   const fetchOrders = async () => {
     try {
@@ -110,11 +108,25 @@ export function OrderTable() {
     }
   };
 
-  console.log(orders);
+  const fetchBookings = async () => {
+    try {
+      const response = await getBookings();
+      setBookings(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
+    fetchBookings();
   }, [statusFilter, timePeriod, dateRange, searchQuery]);
+
+  const hasFutureBookings = (order, bookings) => {
+    return bookings.some(
+      (booking) => new Date(booking.createdAt) > new Date(order.createdAt)
+    );
+  };
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -129,78 +141,6 @@ export function OrderTable() {
 
   const handleToggleOrder = (orderId) => {
     setOpenOrder(openOrder === orderId ? null : orderId);
-  };
-
-  const handleTransferQuantityChange = (itemName, value, availableQuantity) => {
-    const quantity = parseInt(value, 10) || 0;
-    const error =
-      quantity > availableQuantity
-        ? `Quantity exceeds available virtual quantity of ${availableQuantity}`
-        : "";
-
-    setTransferQuantities((prev) => ({
-      ...prev,
-      [itemName]: value,
-    }));
-
-    setQuantityErrors((prev) => ({
-      ...prev,
-      [itemName]: error,
-    }));
-  };
-
-  const hasErrors = Object.values(quantityErrors).some((error) => error !== "");
-
-  const handleTransferSubmit = async (order) => {
-    if (hasErrors) {
-      toast.error("Please correct the errors before submitting.");
-      return;
-    }
-
-    try {
-      const latestOrder = await getOrders(order._id);
-
-      const itemsToUpdate = order.items.map((item) => {
-        const currentItem = latestOrder?.items?.find(
-          (i) => i.name === item.name
-        );
-        const currentBilledQuantity = currentItem?.billedQuantity || 0;
-
-        return {
-          name: item.name,
-          quantity: parseInt(transferQuantities[item.name], 10) || 0,
-          billType: "Virtual Billed",
-        };
-      });
-
-      console.log(itemsToUpdate);
-      await updateBillTypePartWise(order._id, { items: itemsToUpdate });
-      toast.success("Items Billed!");
-
-      const response = await getOrders();
-      const ordersData = response.filter(
-        (item) => item.warehouse === localStorage.getItem("warehouse")
-      );
-
-      // Filter orders based on status
-      const filteredOrders =
-        statusFilter === "All"
-          ? ordersData
-          : ordersData.filter((order) => order.status === statusFilter);
-
-      filteredOrders.sort(
-        (a, b) =>
-          new Date(b.companyBargainDate) - new Date(a.companyBargainDate)
-      );
-
-      setOrders(filteredOrders);
-
-      setOpenOrder(null);
-      setTransferQuantities({});
-      setQuantityErrors({});
-    } catch (error) {
-      setError("Failed to update order");
-    }
   };
 
   const handleDownloadExcel = () => {
@@ -420,14 +360,16 @@ export function OrderTable() {
                             >
                               Edit
                             </Button> */}
-                            <Tooltip content="Delete Order">
-                              <span className="w-fit h-fit">
-                                <MdDeleteOutline
-                                  onClick={() => handleDelete(order._id)}
-                                  className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
-                                />
-                              </span>
-                            </Tooltip>
+                            {!hasFutureBookings(order, bookings) && (
+                              <Tooltip content="Delete Order">
+                                <span className="w-fit h-fit">
+                                  <MdDeleteOutline
+                                    onClick={() => handleDelete(order._id)}
+                                    className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
+                                  />
+                                </span>
+                              </Tooltip>
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -19,18 +19,9 @@ export const createBooking = async (data) => {
     }
 };
 
-export const updateOrder = async (data, id) => {
+export const deleteBooking = async (id) => {
     try {
-        const response = await axios.put(`${API_BASE_URL}/order/${id}`, data);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-    }
-};
-
-export const updateBillTypePartWise = async (orderId, updateData) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/order/${orderId}/bill-type`, updateData);
+        const response = await axios.delete(`${API_BASE_URL}/booking/${id}`);
         return response.data;
     } catch (error) {
         console.log(error);

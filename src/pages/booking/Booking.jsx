@@ -7,6 +7,7 @@ import {
   Button,
   Chip,
   IconButton,
+  Tooltip,
 } from "@material-tailwind/react";
 import { updateBillTypePartWise } from "@/services/orderService";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
@@ -14,9 +15,10 @@ import { toast } from "react-toastify";
 import Datepicker from "react-tailwindcss-datepicker";
 import * as XLSX from "xlsx";
 import excel from "../../assets/excel.png";
-import { getBookings } from "@/services/bookingService";
+import { deleteBooking, getBookings } from "@/services/bookingService";
 import { EditOrderForm } from "@/components/orders/EditOrder";
 import CreateBookingForm from "@/components/bookings/CreateBooking";
+import { MdDeleteOutline } from "react-icons/md";
 
 export function Booking() {
   const [showBookingForm, setBookingForm] = useState(false);
@@ -220,6 +222,16 @@ export function Booking() {
     XLSX.writeFile(workbook, "bookings.xlsx");
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteBooking(id);
+      fetchBookings();
+      toast.error("Booking Deleted");
+    } catch (err) {
+      console.log("Error:", err);
+    }
+  };
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -412,15 +424,16 @@ export function Booking() {
                                 <ChevronDownIcon className="h-5 w-5" />
                               )}
                             </IconButton>
-                            {/* <Button
-                                color="blue"
-                                onClick={() => {
-                                  setSelectedbooking(booking);
-                                  setShowEditbookingForm(true);
-                                }}
-                              >
-                                Edit
-                              </Button> */}
+                            {booking.status === "created" && (
+                              <Tooltip content="Delete Booking">
+                                <span className="w-fit h-fit">
+                                  <MdDeleteOutline
+                                    onClick={() => handleDelete(booking._id)}
+                                    className="text-[2rem] text-red-700 border border-2 border-red-700 rounded-md hover:bg-red-700 hover:text-white transition-all cursor-pointer"
+                                  />
+                                </span>
+                              </Tooltip>
+                            )}
                           </div>
                         </td>
                       </tr>
